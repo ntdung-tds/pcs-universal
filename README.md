@@ -1,6 +1,6 @@
 # PCS — Universal AI Project System
 
-**Phiên bản công khai:** PCS 3.0.2 + Simple Mode update · **Dành cho:** ChatGPT, Claude, Gemini, Codex, Claude Code, Cursor và các AI có công cụ phù hợp.
+**Phiên bản công khai:** PCS 3.0.2 + Dynamic Agent Collaboration · **Dành cho:** ChatGPT, Claude, Gemini, Codex, Claude Code, Cursor và các AI có công cụ phù hợp.
 
 > **Cách sử dụng:** Mở **[PROMPT.md](PROMPT.md)** → sao chép prompt → dán vào ChatGPT/Claude/Gemini → đính kèm SRS, SOW, đề cương, hoặc chỉ mô tả ý tưởng. **Không cần tải hoặc cài PCS bằng tay cho mỗi dự án.**
 
@@ -14,11 +14,21 @@
 
 **Repo này là bộ tiêu chuẩn/công cụ PCS công khai, không phải nơi lưu dự án của bạn.** Mỗi dự án sử dụng repository GitHub **private mặc định**, không lưu mật khẩu, API key, dữ liệu riêng tư hoặc tài liệu nội bộ vào repo công khai. Google Drive dùng cho tài liệu/hình ảnh khi kết nối; nếu không dùng được thì GitHub là nơi lưu thay thế **với điều kiện phân loại dữ liệu cho phép**.
 
-## Hai chế độ — Simple Mode là mặc định
+## Một quy trình duy nhất cho người sử dụng
 
-**Simple Mode:** AI tự tạo repository **private** cho từng dự án (nếu có quyền), tạo `pcs/STATE.json`, `pcs/MOMENT.md`, bản đồ sản phẩm/kiến trúc và các GitHub Issues cần thiết. **Không cần bạn cài GitHub App, Inbox, Gateway, CI riêng hay CLI** để bắt đầu. GitHub Projects tùy chọn. [Xem quy trình và quản trị chất lượng](docs/SIMPLE_MODE.md).
+AI tự khởi tạo repository dự án **private**, lưu `pcs/STATE.json` và `pcs/MOMENT.md`, quản lý task/feature/flow/release và GitHub Issues. Khi agent mới đến, PCS đăng ký và phê duyệt trong **cùng trạng thái**. Không phải chọn chế độ hay chuyển hệ dữ liệu chỉ vì tăng số agent. **Không cần cài GitHub App, Inbox, Gateway hoặc chạy CLI** để bắt đầu. GitHub Projects vẫn tùy chọn. [Xem quy trình](docs/SIMPLE_MODE.md).
 
-**Advanced Mode:** dành cho nhu cầu nhiều AI ghi đồng thời, chuỗi Moment tập trung, transaction receipts và API. Cần triển khai, phân quyền và nghiệm thu kỹ thuật riêng. Handbook hiện là **tài liệu triển khai nâng cao**, không phải checklist bắt buộc cho người dùng Simple Mode.
+Những hạ tầng như GitHub Inbox, Gateway và chuỗi event nâng cao là **thành phần kỹ thuật tùy chọn** cho các tình huống cần mức giao dịch/kiểm toán cao; không tự kích hoạt hoặc thay đổi nguồn trạng thái chuẩn. Handbook mô tả triển khai hạ tầng này, không phải checklist bắt buộc. Các dự án cũ đã dùng canonical HEAD riêng cần migration có kiểm chứng trước khi thống nhất.
+
+## Một hay nhiều agent đều dùng một PCS
+
+- Mặc định chỉ **một AI** làm việc; không cần tạo thêm agent.
+- Khi agent mới xin tham gia, có thể **tự đề xuất task**, nhận phân công từ Lead hoặc chỉ định từ **chủ dự án**.
+- **Bạn hoặc Lead đã được bạn ủy quyền đều được duyệt đề xuất thông thường.** Công việc nhạy cảm phải do bạn phê duyệt.
+- Các agent cùng dùng `pcs/STATE.json`, branch/PR riêng, lưu Moment; danh tính và phê duyệt phải được xác minh qua GitHub.
+- Không tự kích hoạt workflow/hạ tầng mới chỉ vì có nhiều agent; nếu cần cấp quyền, AI yêu cầu đúng lúc.
+
+[**Xem hướng dẫn quản lý nhiều agent**](docs/AGENT_COLLABORATION.md) · [**Prompt cho agent mới**](PROMPT.md#prompt-agent-mới-xin-tham-gia-không-cố-định-nhiệm-vụ)
 
 ## PCS giúp AI làm gì?
 
@@ -44,6 +54,7 @@ Repo công khai này **không tự cấp quyền** cho AI chạy mã, clone, t�
 | Nguyên tắc chung | [`adapters/UNIVERSAL_INSTRUCTIONS.md`](adapters/UNIVERSAL_INSTRUCTIONS.md) |
 | Kiến trúc/lưu trữ | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/STORAGE_POLICY.md`](docs/STORAGE_POLICY.md) |
 | Bảo mật | [`SECURITY.md`](SECURITY.md), [`docs/DATA_CLASSIFICATION.md`](docs/DATA_CLASSIFICATION.md) |
+| Cộng tác agent/duyệt | [`docs/AGENT_COLLABORATION.md`](docs/AGENT_COLLABORATION.md), [`runtime/pcs3-collaboration.mjs`](runtime/pcs3-collaboration.mjs) |
 | Simple Mode và quản trị | [`docs/SIMPLE_MODE.md`](docs/SIMPLE_MODE.md), [`docs/SIMPLE_MODE_QUALITY.md`](docs/SIMPLE_MODE_QUALITY.md) |
 | CLI / code mẫu | [`runtime/`](runtime/) |
 | Kiểm thử, giới hạn | [`TEST_REPORT.md`](TEST_REPORT.md) |

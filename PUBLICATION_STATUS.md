@@ -1,8 +1,7 @@
-# Trạng thái xuất bản PCS Universal
+# PCS public distribution status
 
-- Repository public: https://github.com/ntdung-tds/pcs-universal
-- Nhánh chính: `main`.
-- Simple Mode là chế độ mặc định; [PROMPT.md](PROMPT.md) là điểm sao chép cho người dùng, [START_HERE.md](START_HERE.md) là điểm vào cho AI.
-- Mã và mẫu Advanced Mode là tùy chọn, không có dịch vụ Inbox/Gateway đang chạy chỉ nhờ xuất bản repository public.
-- Mỗi repository dự án phải riêng, mặc định private; không lưu dữ liệu người dùng trên repository PCS công khai.
-- Kiểm thử cục bộ không thay thế E2E trên từng ChatGPT/Claude/Gemini và quyền GitHub thật.
+- Public source repository: https://github.com/ntdung-tds/pcs-universal
+- This local package adds **Dynamic Agent Collaboration** on top of PCS 3.0.2 Simple Mode.
+- GitHub publication/PR/CI verification must be recorded separately when completed; this document is not deployment proof.
+- Multi-agent E2E on customer projects has not yet been tested.
+- No project data, credentials or client SRS belong in the public PCS repository.

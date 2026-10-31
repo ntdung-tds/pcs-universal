@@ -1,0 +1,12 @@
+{
+  "id": "JOIN01",
+  "agent_id": "AGENT01",
+  "provider": "Claude",
+  "github_login": "worker-bot",
+  "issue_number": 10,
+  "mode": "SELF_PROPOSED",
+  "risk": "NORMAL",
+  "summary": "Tôi có thể đảm nhiệm một phần giao diện chưa có agent phụ trách",
+  "suggested_tasks": [],
+  "capabilities": ["frontend", "review"]
+}

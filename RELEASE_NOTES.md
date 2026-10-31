@@ -1,3 +1,16 @@
+# PCS 3.0.2 — Dynamic Agent Collaboration enhancement (2026-11-01)
+
+- One project repo, one canonical `pcs/STATE.json`; optional `state.collaboration` extends state without introducing second governance store.
+- One currently authorized Lead Agent; owner-approved delegation has bounded expiry/epoch; owner can reassign and clear.
+- New agent may apply with no task, propose open tasks, receive Lead assignment or direct Owner assignment.
+- Owner or delegated Lead may approve normal requests; Owner alone can approve sensitive work; self-approval and duplicate task claims blocked.
+- Verified GitHub issue/comment metadata rather than user-supplied approval text. No automatic agent spawning or claim of E2E certification.
+- Optional GitHub Git Data operator updates STATE + MOMENT + snapshot in one commit; non-forced branch ref prevents stale overwrite.
+- Tests cover identity/spoofing, simultaneous updates, task conflicts, revoke, lease expiry and delegation.
+- Strict security limitation: sharing the same GitHub identity between Owner and agent cannot provide independent authentication; deployment must separate principals / branch protections for secure approvals.
+
+---
+
 # PCS 3.0.2 — Simple Mode Enhancement (GitHub public edition)
 
 - Simple Mode is now the default: user copies PROMPT.md and submits SRS, agent creates a private project repository and owns PCS setup. No mandatory GitHub App/Inbox/Gateway/CLI.

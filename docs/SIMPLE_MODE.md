@@ -50,3 +50,7 @@ Một trạng thái `ACCEPTED` với metadata `verification.state=VERIFIED` mớ
 ## Khi nào dùng Advanced Mode?
 
 Chỉ khi cần **nhiều AI ghi song song với ràng buộc giao dịch nghiêm ngặt, GitHub Inbox, request receipts, canonical PCS tập trung hoặc API Gateway**. Xem [`docs/INSTALL_AND_ACTIVATE.md`](INSTALL_AND_ACTIVATE.md). Đây là một lựa chọn triển khai nâng cao, không phải bước cần làm trước mỗi dự án.
+
+## Agent mới tham gia linh hoạt
+
+Không cần thay đổi mode hay tạo state khác. Đọc [`AGENT_COLLABORATION.md`](AGENT_COLLABORATION.md). `state.collaboration` là trường tùy chọn trong **cùng** `pcs/STATE.json`; agent mới được tự đề xuất hoặc nhận phân công, Owner/Lead duyệt theo quyền, có Issue/comment GitHub thật làm provenance. Agent chưa được duyệt không được tự coi mình ACTIVE.

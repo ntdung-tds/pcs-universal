@@ -1,3 +1,18 @@
+# PCS 3.0.2 + Dynamic Agent Collaboration — Test report (2026-11-01)
+
+**Scope:** 132/132 local automated tests PASS; baseline security audit PASS. These are unit/mock/integration-simulation tests, not a live multi-chat E2E certification.
+
+- 93 original tests retained.
+- 39 new tests cover agent join without assigned work, optional task proposal, Owner/Lead approval, authenticated Github issue/comment provenance, rejection, revocation, lead delegation/expiry/fencing, task collision, sensitive-scope escalation, replay, shared-identity self-approval block, 3-file atomic Git commit and non-force stale-writer conflict.
+- `runtime/pcs3-agent-operator.mjs` mocked Git Data transactions: STATE + Moment + snapshot in one commit, `PATCH ref force:false`; stale branch and branch-protection 403 rejected. Simulated API provider, **not a real provider E2E test**.
+- GitHub login is not an independent agent identity. Separate owner/bot principals and protected branches are required to make enforcement meaningful; fail-closed on owner/proposer same GitHub login and org repo without owner policy.
+- `pcs/STATE.json` remains the only source of project state for new public-prompt projects. `collaboration` is an optional nested field; existing solo projects remain valid.
+- No GitHub project repository, credentials, Cloudflare worker or IAICT production system was modified by these local tests.
+
+**Outstanding E2E:** Verify GitHub Issues/comment author and scope through real API; branch protection and approved PR merge; live owner-vs-agent permission separation; two chat sessions changing the same revision; genuine ChatGPT/Claude cross-platform handoff. Do not claim these passed without provider evidence.
+
+---
+
 # PCS 3.0.2 — Simple Mode enhancement test report
 
 **Ngày:** 2026-11-01. **Mức kiểm định:** local automated tests + DOCX render, chưa phải nghiệm thu E2E trong ChatGPT/Claude/Gemini.

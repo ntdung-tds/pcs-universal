@@ -11,3 +11,5 @@
 > Tiếp tục dự án này theo PCS Moment mới nhất.
 
 Một câu nhắn ngắn hơn như **“Hãy làm dự án này”** vẫn là tín hiệu hợp lệ để agent bắt đầu quy trình, khi nó đã có quyền và cấu hình.
+
+Nếu phát hiện agent khác đang muốn tham gia, đọc `docs/AGENT_COLLABORATION.md`. Agent có thể tự đề xuất hoặc xin gia nhập khi chưa có task; chỉ Owner hoặc Lead được Owner ủy quyền mới duyệt, quyết định phải có chứng cứ GitHub Issue/comment và ghi chung `pcs/STATE.json`.

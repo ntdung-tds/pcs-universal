@@ -31,3 +31,5 @@ Một câu ngắn là đủ **kích hoạt quy trình** khi adapter đã đượ
 
 
 **PCS 3.0.2:** before submitting, read `docs/GITHUB_INBOX_MODE.md`. Large files follow `docs/LARGE_FILE_INTAKE.md`. Never load the archived v2.1 package into chatbot knowledge.
+
+**Thêm agent mới:** Không chuyển chế độ hoặc tạo state khác. Mở `PROMPT.md` phần Agent mới xin tham gia; agent đọc `docs/AGENT_COLLABORATION.md`, mở GitHub Issue đề xuất, chờ Owner hoặc Lead được ủy quyền duyệt rồi mới làm việc.

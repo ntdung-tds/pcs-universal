@@ -1,3 +1,5 @@
+> **Chính sách triển khai mới:** Một dự án có **một** nguồn trạng thái PCS duy nhất. Với dự án được tạo qua prompt công khai, sử dụng `pcs/STATE.json` trong repository dự án; agent registry nằm trong `state.collaboration`. Không tự mở `pcs3/projects/<slug>/HEAD.json` chỉ vì xuất hiện nhiều agent. Kho HEAD tập trung là kiến trúc vận hành cũ/tùy chọn cần migration có kiểm chứng.
+
 > **Simple Mode:** `pcs/STATE.json` là nguồn trạng thái ở repository dự án; **Advanced Mode:** `pcs3/projects/<slug>/HEAD.json`. Chọn một chế độ và chỉ chuyển đổi theo migration được kiểm chứng; không dùng hai dạng đồng thời.
 
 # PCS 3.0.2 — Active knowledge, legacy isolation and precedence

@@ -56,3 +56,7 @@ Agent định kỳ cập nhật Product Map/Architecture Map và các quan hệ 
 ## GitHub Inbox gatewayless mode
 
 Chat apps có quyền tạo file GitHub nhưng không chạy Node/hash chain có thể gửi yêu cầu dưới `pcs3/inbox/REQ-*.json`. GitHub Actions (`templates/private-intake/pcs3-inbox.yml`) đọc yêu cầu, áp dụng có kiểm tra CAS, ghi receipt và Moment. Đây là tùy chọn **không cần host server** nhưng repo Actions + quyền ghi phải được cấu hình/kiểm thử một lần. Xem `GITHUB_INBOX_MODE.md`.
+
+## Dynamic Agent Collaboration (giai đoạn 3.0.2+)
+
+Đối với dự án sử dụng `pcs/STATE.json`, registry agent/lead/proposal/assignments nằm ở `state.collaboration`, không phải một state song song. `runtime/pcs3-agent-operator.mjs` có thể commit STATE + MOMENT + snapshot **trong một Git commit** với ref update không force, chống ghi đè do các agent thao tác đồng thời. Owner/Lead có hai nguồn quyền khác nhau: owner được xác minh qua GitHub repository metadata và comment, Lead phải có ủy quyền owner còn hạn. Mẫu này không thể xác minh nhiều agent nếu tất cả dùng cùng một GitHub principal; phải áp dụng tài khoản hoặc token riêng cùng branch protection cho môi trường có rủi ro. Xem [`AGENT_COLLABORATION.md`](AGENT_COLLABORATION.md).

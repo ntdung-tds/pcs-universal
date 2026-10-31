@@ -1,3 +1,5 @@
+> **ADVANCED MODE ONLY.** Người dùng chỉ copy prompt và giao SRS **không cần làm các bước bên dưới**. Simple Mode: [`SIMPLE_MODE.md`](SIMPLE_MODE.md). Các bước sau chỉ dành cho người vận hành hạ tầng GitHub Inbox + canonical PCS tập trung.
+
 # PCS 3.0.2 — One-time activation for conversational AI
 
 **You do not copy PCS into every project.** Deploy the PCS 3.0.2 runtime/workflow once into a controlled repository. For each new project, attach the SRS and instruct your authorized AI to create a PCS project. AI must not claim it wrote to GitHub if its connector lacks write capabilities.

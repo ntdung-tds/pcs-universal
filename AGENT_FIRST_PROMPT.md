@@ -1,3 +1,5 @@
+> **Dùng mặc định:** [PROMPT.md](PROMPT.md), chế độ Simple tại [docs/SIMPLE_MODE.md](docs/SIMPLE_MODE.md). Không yêu cầu người dùng cài backend theo Handbook để bắt đầu.
+
 # Prompt đơn giản cho ChatGPT / Claude / Gemini
 
 **Sau khi kết nối GitHub và gắn hướng dẫn PCS3 vào AI app:**

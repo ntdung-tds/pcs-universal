@@ -1,8 +1,10 @@
 # Từ “Hãy triển khai dự án này” đến sản phẩm có kiểm chứng
 
+> **Chế độ được khuyến nghị là Simple Mode:** bạn chỉ copy [`PROMPT.md`](../PROMPT.md), đưa SRS/đề cương và cấp quyền GitHub đúng lúc. Không bắt buộc tạo PCS canonical repo, Inbox, GitHub App, API Gateway hay cài CLI. Xem [`SIMPLE_MODE.md`](SIMPLE_MODE.md). Phần mô tả bên dưới về `pcs3/projects/<slug>/HEAD.json` là **Advanced Mode** cho hạ tầng đã cài, không phải điểm xuất phát mặc định.
+
 ## Những việc người dùng cần làm
 
-**Lần đầu cho mỗi AI app:** cấp quyền GitHub tới một repository PCS **private**, optionally Google Drive; thêm/đăng ký hướng dẫn PCS một lần (Plugin Skill, Claude Project, Gemini Gem). Một số app không hỗ trợ ghi GitHub; khi đó tự động đồng bộ chỉ khả thi qua integration/runtime có quyền. Không cần người dùng tự copy Starter vào mỗi project.
+**Lần đầu khi cần ghi:** cấp quyền GitHub phù hợp cho ứng dụng AI. Chỉ cần repo riêng tư của dự án, không nhất thiết cần kho PCS tập trung. Google Drive tùy chọn; agent tự thực hiện các bước kỹ thuật có quyền và công cụ. Không cần người dùng copy Starter vào mỗi dự án.
 
 **Mỗi dự án:** đính kèm SRS/đề cương hoặc mô tả mục tiêu và nói: “Hãy xây dựng dự án này”. Người dùng phê duyệt những thay đổi lớn về scope, truy cập, triển khai production hoặc rủi ro dữ liệu khi được hỏi.
 

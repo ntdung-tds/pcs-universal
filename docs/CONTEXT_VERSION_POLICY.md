@@ -1,3 +1,5 @@
+> **Simple Mode:** `pcs/STATE.json` là nguồn trạng thái ở repository dự án; **Advanced Mode:** `pcs3/projects/<slug>/HEAD.json`. Chọn một chế độ và chỉ chuyển đổi theo migration được kiểm chứng; không dùng hai dạng đồng thời.
+
 # PCS 3.0.2 — Active knowledge, legacy isolation and precedence
 
 Only upload the **active adapter for your platform**, `adapters/UNIVERSAL_INSTRUCTIONS.md`, and selected relevant `docs/` into the conversational assistant's Knowledge. Do **NOT** upload the entire ZIP or `archive/PCS_2.1_LEGACY_ARCHIVE.zip` into a chatbot Knowledge store. Legacy PCS 2.1 has a different state model and is stored only for migration/reference use.

@@ -1,10 +1,10 @@
 # PCS — Universal AI Project System
 
-**Phiên bản công khai:** PCS 3.0.2 · **Dành cho:** ChatGPT, Claude, Gemini, Codex, Claude Code, Cursor và các AI có công cụ phù hợp.
+**Phiên bản công khai:** PCS 3.0.2 + Simple Mode update · **Dành cho:** ChatGPT, Claude, Gemini, Codex, Claude Code, Cursor và các AI có công cụ phù hợp.
 
 > **Cách sử dụng:** Mở **[PROMPT.md](PROMPT.md)** → sao chép prompt → dán vào ChatGPT/Claude/Gemini → đính kèm SRS, SOW, đề cương, hoặc chỉ mô tả ý tưởng. **Không cần tải hoặc cài PCS bằng tay cho mỗi dự án.**
 
-**[📋 XEM VÀ SAO CHÉP PROMPT](PROMPT.md)** · [Dành cho AI: bắt đầu tại đây](START_HERE.md) · [Hướng dẫn chi tiết](docs/ONE_SENTENCE_WORKFLOW.md)
+**[📋 XEM VÀ SAO CHÉP PROMPT](PROMPT.md)** · **[Cách dùng đơn giản](docs/SIMPLE_MODE.md)** · [Dành cho AI](START_HERE.md) · [Advanced Mode](docs/INSTALL_AND_ACTIVATE.md)
 
 ## Bắt đầu trong 3 bước
 
@@ -13,6 +13,12 @@
 3. AI đọc **[START_HERE.md](START_HERE.md)** và các tài liệu liên quan từ repository này, tự kiểm tra khả năng GitHub/Google Drive, chủ động thực hiện, kiểm thử và lưu trạng thái **khi thực sự có quyền ghi**.
 
 **Repo này là bộ tiêu chuẩn/công cụ PCS công khai, không phải nơi lưu dự án của bạn.** Mỗi dự án sử dụng repository GitHub **private mặc định**, không lưu mật khẩu, API key, dữ liệu riêng tư hoặc tài liệu nội bộ vào repo công khai. Google Drive dùng cho tài liệu/hình ảnh khi kết nối; nếu không dùng được thì GitHub là nơi lưu thay thế **với điều kiện phân loại dữ liệu cho phép**.
+
+## Hai chế độ — Simple Mode là mặc định
+
+**Simple Mode:** AI tự tạo repository **private** cho từng dự án (nếu có quyền), tạo `pcs/STATE.json`, `pcs/MOMENT.md`, bản đồ sản phẩm/kiến trúc và các GitHub Issues cần thiết. **Không cần bạn cài GitHub App, Inbox, Gateway, CI riêng hay CLI** để bắt đầu. GitHub Projects tùy chọn. [Xem quy trình và quản trị chất lượng](docs/SIMPLE_MODE.md).
+
+**Advanced Mode:** dành cho nhu cầu nhiều AI ghi đồng thời, chuỗi Moment tập trung, transaction receipts và API. Cần triển khai, phân quyền và nghiệm thu kỹ thuật riêng. Handbook hiện là **tài liệu triển khai nâng cao**, không phải checklist bắt buộc cho người dùng Simple Mode.
 
 ## PCS giúp AI làm gì?
 
@@ -38,10 +44,11 @@ Repo công khai này **không tự cấp quyền** cho AI chạy mã, clone, t�
 | Nguyên tắc chung | [`adapters/UNIVERSAL_INSTRUCTIONS.md`](adapters/UNIVERSAL_INSTRUCTIONS.md) |
 | Kiến trúc/lưu trữ | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/STORAGE_POLICY.md`](docs/STORAGE_POLICY.md) |
 | Bảo mật | [`SECURITY.md`](SECURITY.md), [`docs/DATA_CLASSIFICATION.md`](docs/DATA_CLASSIFICATION.md) |
+| Simple Mode và quản trị | [`docs/SIMPLE_MODE.md`](docs/SIMPLE_MODE.md), [`docs/SIMPLE_MODE_QUALITY.md`](docs/SIMPLE_MODE_QUALITY.md) |
 | CLI / code mẫu | [`runtime/`](runtime/) |
 | Kiểm thử, giới hạn | [`TEST_REPORT.md`](TEST_REPORT.md) |
 | Hướng dẫn advanced | [`docs/`](docs/) |
 
-**Trạng thái:** PCS 3.0.2 đã kiểm thử cục bộ theo `TEST_REPORT.md`, nhưng **chưa chứng nhận quy trình end-to-end trên mọi nền tảng AI hoặc tài khoản GitHub cụ thể**.
+**Trạng thái:** PCS 3.0.2 Simple Mode enhancement đã kiểm thử cục bộ theo `TEST_REPORT.md`, nhưng **chưa chứng nhận quy trình end-to-end trên mọi nền tảng AI hoặc tài khoản GitHub cụ thể**.
 
 **Quyền sử dụng lại:** Repo đang công khai để đọc và tham khảo. Chưa gắn giấy phép mã nguồn mở; chủ sở hữu cần quyết định giấy phép nếu muốn cho phép bên khác tái sử dụng/phân phối rộng rãi.

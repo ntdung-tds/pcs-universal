@@ -1,0 +1,13 @@
+{
+  "schema":"pcs3.inbox.v1",
+  "project":"crm-project",
+  "actor":"chatgpt:session-id",
+  "command":"artifact_drive_ref",
+  "expected_revision":2,
+  "drive_file_id":"EXAMPLE_DRIVE_FILE_ID",
+  "name":"requirements.pdf",
+  "mime":"application/pdf",
+  "classification":"INTERNAL",
+  "bytes":1234567,
+  "sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+}

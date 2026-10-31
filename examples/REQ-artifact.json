@@ -1,0 +1,11 @@
+{
+  "schema": "pcs3.inbox.v1",
+  "project": "crm-project",
+  "actor": "chatgpt:session-identifier",
+  "command": "artifact",
+  "expected_revision": 2,
+  "name": "requirements.txt",
+  "mime": "text/plain",
+  "base64": "VGVzdCBTUlM=",
+  "drive": true
+}

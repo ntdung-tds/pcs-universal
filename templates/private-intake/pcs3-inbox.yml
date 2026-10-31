@@ -1,0 +1,52 @@
+name: PCS3 Inbox Reconciler
+on:
+  push:
+    paths:
+      - 'pcs3/inbox/**'
+  workflow_dispatch:
+  schedule:
+    # Reconcile requests even if a push-triggered run is missed or the queue is full.
+    - cron: '17 * * * *'
+permissions:
+  contents: read
+concurrency:
+  # Single writer per repository for this worker. Cross-repo writers must use one controlled processor.
+  group: pcs3-inbox-${{ github.repository }}
+  cancel-in-progress: false
+  queue: max
+jobs:
+  reconcile:
+    if: github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+      - name: PCS security preflight
+        run: node tools/pcs-security-audit.mjs --root=.
+      - name: Mint scoped short-lived canonical repository write token
+        id: pcs-app-token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.PCS_APP_CLIENT_ID }}
+          private-key: ${{ secrets.PCS_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ vars.PCS_CANONICAL_REPO_NAME || github.event.repository.name }}
+          permission-contents: write
+      - name: Process all pending requests from current GitHub repository (not stale checkout)
+        env:
+          # Short-lived GitHub App token; app must be installed on the canonical repository.
+          PCS_GITHUB_TOKEN: ${{ steps.pcs-app-token.outputs.token }}
+          PCS_GITHUB_REPO: ${{ vars.PCS_CANONICAL_REPO || github.repository }}
+          PCS_GITHUB_BRANCH: ${{ vars.PCS_CANONICAL_BRANCH || github.event.repository.default_branch }}
+          PCS_INBOX_TOKEN: ${{ github.token }}
+          PCS_INBOX_REPO: ${{ github.repository }}
+          PCS_INBOX_BRANCH: ${{ vars.PCS_INBOX_BRANCH || github.event.repository.default_branch }}
+          PCS_DRIVE_ACCESS_TOKEN: ${{ secrets.PCS_DRIVE_ACCESS_TOKEN }}
+          PCS_DRIVE_FOLDER_ID: ${{ secrets.PCS_DRIVE_FOLDER_ID }}
+        run: node runtime/pcs3-inbox.mjs

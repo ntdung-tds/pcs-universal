@@ -1,0 +1,17 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://example.invalid/pcs3.state.schema.json",
+  "title":"PCS3 Canonical Project State",
+  "type":"object",
+  "required":["schema","slug","name","source_refs","product_map","architecture_map","tasks","features","flows","releases","decisions","risks","approvals","artifacts","current"],
+  "properties":{
+    "schema":{"const":"pcs3.project-state.v1"},
+    "slug":{"type":"string","pattern":"^[a-z0-9][a-z0-9-]{1,62}$"},
+    "name":{"type":"string","minLength":1},
+    "phase":{"type":"string"},
+    "source_refs":{"type":"array"},"product_map":{"type":"object"},"architecture_map":{"type":"object"},
+    "tasks":{"type":"array"},"features":{"type":"array"},"flows":{"type":"array"},"releases":{"type":"array"},
+    "decisions":{"type":"array"},"risks":{"type":"array"},"approvals":{"type":"array"},"artifacts":{"type":"array"},
+    "current":{"type":"object","required":["next_action"],"properties":{"next_action":{"type":"string","minLength":1}}}
+  },"additionalProperties":true
+}

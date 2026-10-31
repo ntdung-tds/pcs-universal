@@ -1,0 +1,57 @@
+# PCS 3.0.2 — Reliability & Interoperability Hardening (2026-10-31)
+
+Retains every PCS 3.0.1 security feature. Follows user review "Các Vùng Cần Cải Thiện Chi Tiết (Primary Growth Areas)" and adds a fourth issue: branch protection vs. Inbox write capability.
+
+## Fixed / added
+
+1. Workflow concurrency uses `queue: max`, serialized reconciliation, periodic schedule and `workflow_dispatch`; runner scans live GitHub contents rather than stale checkout. **Not** guaranteed infinite queue; high-volume retention/partitioning remains an operational task.
+2. Full request ID + digest recorded in canonical Moment. Re-processing after a crash when Receipt was missing recovers from immutable event rather than executing the operation twice. Ambiguous provider errors have no terminal REJECTED receipt.
+3. `requestStatus` and CLI for truthful status: `APPLIED`, `APPLIED_RECEIPT_PENDING`, `SUBMITTED_PENDING`, `REJECTED`, `UNKNOWN`. No automatic retries/polling/re-submissions from conversational AI.
+4. Large artifact reference intake via constrained Drive folder or project-scoped Release asset, validating source bytes/hash and retaining full GitHub content. No arbitrary URLs; no raw CONFIDENTIAL/RESTRICTED sources through Inbox.
+5. Explicit separated private inbox/canonical topology, with short-lived GitHub App token, rather than disabling branch protection.
+6. Legacy v2.1 documentation isolated in `archive/PCS_2.1_LEGACY_ARCHIVE.zip`; no stale instructions in active chatbot Knowledge.
+7. New adversarial regression tests, deployment guidance and updated handbook.
+
+## Important limits
+
+This release is a **local reference implementation**, not a production-certified app or a GitHub Action already deployed to a real user repository. Branch ruleset bypass must be approved and validated. Drive OAuth refresh is deployment-specific, and native Google Docs export is not implemented in reference intake. GitHub directory listing has a limit; very large queues need archiving/partitioning. GitHub App token and Action permissions are not self-provisioning.
+
+---
+
+# PCS 3.0.1 — Security Hardening Patch (2026-10-31)
+
+Bảo mật bổ sung trên PCS 3.0, không thay đổi dự án IAICT hay bất kỳ remote deployment nào.
+
+- Dữ liệu phân loại PUBLIC/INTERNAL/CONFIDENTIAL/RESTRICTED, chặn một số credential trước khi upload GitHub/Drive hoặc commit Moment.
+- AES-256-GCM cho CONFIDENTIAL binary artifacts, GitHub + Drive giữ ciphertext, bắt buộc khóa riêng `PCS_ARTIFACT_KEY_B64`. RESTRICTED fail-closed.
+- Kiểm tra repository private cho mọi checkpoint; Inbox chặn giả mạo approval/ACCEPTED.
+- Read-only GitHub security doctor (private, branch protection/rulesets/workflow permissions, CodeQL và Dependabot cảnh báo theo quyền API), trạng thái UNKNOWN không bị coi là PASS.
+- Workflow pin action SHAs, scoping quyền, security+regression CI; thêm scanner baseline, SECURITY.md, threat model, security gates, docs và các test.
+- Lưu ý: quy tắc bảo mật repo phải được bật bằng GitHub Settings; scanner không phải DLP, encryption không bao gồm HEAD/metadata, confidentiality ở lớp chat app/connector không thuộc kiểm soát của bộ công cụ.
+
+---
+
+# PCS 3.0.0 Release Notes — 2026-10-31
+
+**Product:** PCS Universal AI Project System (ChatGPT / Claude / Gemini / coding agents)
+
+## Added
+- GitHub canonical project state with full snapshot Moments and SHA256 history chain.
+- GitHub-first **binary mirroring** for all artifacts, regardless of Drive status.
+- Google Drive optional upload, fallback to GitHub Contents or draft Release assets.
+- Optimistic concurrency (GitHub contents SHA + expected revision), orphan warnings and conflict reports.
+- Four acceptance layers: task, feature, flow, release; evidence/approval metadata validation.
+- Node CLI (`init`, `resume`, `state`, `checkpoint`, `artifact`, `verify --assets`, `doctor`).
+- Node HTTP REST Gateway with Bearer key for compatible API integrations, OpenAPI description.
+- **GitHub Actions Inbox processor** for chat app GitHub file-write connectors: `init`, `patch`, `artifact` and receipts; one-time central repository setup.
+- ChatGPT Plugin Skill, Claude Project instruction, Gemini Gem instruction, coding agent bridge.
+- PCS 2.1 fully preserved under `legacy/PCS_2.1`.
+- Operations, security, source reference and adoption/test documents, Word handbook.
+
+## Quality and reality
+
+Local tests passed (see TEST_REPORT.md). No live GitHub, Drive or platform integrations were performed. Application-specific instructions are not the same as installed connectors. Deployment and secrets stay with the user environment and permissions.
+
+## Compatibility
+
+Requires Node.js >=20 for CLI/inbox/gateway; Word document is readable without Node; chat instructions can be used with platform tools after appropriate one-time authorization.

@@ -1,0 +1,12 @@
+{
+  "schema": "pcs3.inbox.v1",
+  "project": "crm-project",
+  "actor": "claude:session-identifier",
+  "command": "patch",
+  "expected_revision": 1,
+  "reason": "Reviewed requirements and specified immediate next action",
+  "patches": [
+    { "op": "set", "path": "/current/last_completed_step", "value": "Reviewed SRS and extracted requirements" },
+    { "op": "set", "path": "/current/next_action", "value": "Design the data model and acceptance tests" }
+  ]
+}

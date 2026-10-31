@@ -1,0 +1,232 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "PCS 3.0 Universal Project Gateway",
+    "version": "3.0.0",
+    "description": "Optional private bridge; deploy securely, never publish credentials. GitHub is canonical."
+  },
+  "servers": [
+    {
+      "url": "https://REPLACE-WITH-YOUR-PRIVATE-GATEWAY",
+      "description": "Operator-deployed HTTPS endpoint; example is not live"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "AnyProject": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "parameters": {
+      "Slug": {
+        "name": "slug",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]{1,62}$"
+        }
+      }
+    }
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "pcsHealth",
+        "responses": {
+          "200": {
+            "description": "Status"
+          }
+        }
+      }
+    },
+    "/projects": {
+      "post": {
+        "operationId": "pcsCreateProject",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "slug",
+                  "name"
+                ],
+                "properties": {
+                  "slug": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "actor": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Project created"
+          }
+        }
+      }
+    },
+    "/projects/{slug}/resume": {
+      "get": {
+        "operationId": "pcsResume",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Slug"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Latest active moment"
+          }
+        }
+      }
+    },
+    "/projects/{slug}/state": {
+      "get": {
+        "operationId": "pcsGetState",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Slug"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Versioned canonical state"
+          }
+        }
+      }
+    },
+    "/projects/{slug}/checkpoint": {
+      "post": {
+        "operationId": "pcsCheckpoint",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Slug"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "expected_revision",
+                  "state"
+                ],
+                "properties": {
+                  "expected_revision": {
+                    "type": "integer"
+                  },
+                  "state": {
+                    "$ref": "#/components/schemas/AnyProject"
+                  },
+                  "reason": {
+                    "type": "string"
+                  },
+                  "actor": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Checkpoint committed"
+          },
+          "409": {
+            "description": "Revision conflict; reload"
+          }
+        }
+      }
+    },
+    "/projects/{slug}/artifacts": {
+      "post": {
+        "operationId": "pcsUploadSmallArtifact",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Slug"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "expected_revision",
+                  "name",
+                  "base64"
+                ],
+                "properties": {
+                  "expected_revision": {
+                    "type": "integer"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "base64": {
+                    "type": "string"
+                  },
+                  "mime": {
+                    "type": "string"
+                  },
+                  "drive": {
+                    "type": "boolean"
+                  },
+                  "actor": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Artifact registered in GitHub with blob in Drive or GitHub"
+          }
+        }
+      }
+    },
+    "/projects/{slug}/verify": {
+      "get": {
+        "operationId": "pcsVerify",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Slug"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Hash chain verification"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "schema": "pcs3.inbox.v1",
+  "project": "crm-project",
+  "actor": "chatgpt:session-identifier",
+  "command": "init",
+  "name": "CRM Portal"
+}

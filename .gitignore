@@ -1,0 +1,18 @@
+# Local secrets and runtime data - never commit
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+credentials/
+node_modules/
+.DS_Store
+__pycache__/
+*.pyc
+pcs3/projects/
+pcs3/inbox/
+pcs3/receipts/
+*.log

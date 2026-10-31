@@ -1,0 +1,13 @@
+{
+  "schema":"pcs3.inbox.v1",
+  "project":"crm-project",
+  "actor":"claude:session-id",
+  "command":"artifact_github_asset",
+  "expected_revision":2,
+  "asset_id":123456789,
+  "name":"demo.mp4",
+  "mime":"video/mp4",
+  "classification":"INTERNAL",
+  "bytes":1234567,
+  "sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+}

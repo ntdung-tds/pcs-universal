@@ -1,0 +1,62 @@
+{
+  "schema": "pcs3.simple.v1",
+  "revision": 1,
+  "updated_at": "2026-10-31T18:23:56.852Z",
+  "state": {
+    "schema": "pcs3.project-state.v1",
+    "slug": "example-project",
+    "name": "Example project",
+    "version": "3.0.2",
+    "created_at": "2026-10-31T18:23:56.852Z",
+    "updated_at": "2026-10-31T18:23:56.852Z",
+    "phase": "DISCOVERY",
+    "source_refs": [],
+    "product_map": {
+      "state": "DRAFT",
+      "summary": "Not yet analyzed; agent must read SRS and verify"
+    },
+    "architecture_map": {
+      "state": "DRAFT",
+      "summary": "Architecture not yet verified"
+    },
+    "tasks": [],
+    "features": [],
+    "flows": [],
+    "releases": [],
+    "decisions": [],
+    "risks": [],
+    "approvals": [],
+    "artifacts": [],
+    "current": {
+      "active_task": null,
+      "last_completed_step": "Project registered",
+      "next_action": "Analyze the requirements and build the product/architecture maps",
+      "blockers": [],
+      "actor": "agent"
+    },
+    "policy": {
+      "production": "EXPLICIT_APPROVAL",
+      "destructive": "EXPLICIT_APPROVAL",
+      "credentials": "DO_NOT_COMMIT",
+      "source_of_truth": "GITHUB",
+      "drive": "PREFERRED_OPTIONAL"
+    },
+    "environment": {
+      "github": "REQUIRED",
+      "google_drive": "OPTIONAL"
+    },
+    "history_notes": [],
+    "management": {
+      "scope_baseline": "UNREVIEWED",
+      "milestones": [],
+      "stakeholders": [],
+      "budget": {
+        "currency": null,
+        "approved_amount": null,
+        "forecast": null
+      },
+      "changes": [],
+      "quality_policy": "Risk-proportionate independent verification before acceptance"
+    }
+  }
+}

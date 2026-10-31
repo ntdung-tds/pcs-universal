@@ -1,9 +1,8 @@
-# Publication and verification status
+# Trạng thái xuất bản PCS Universal
 
-- Version: PCS 3.0.2, public distribution.
-- Canonical public repository: https://github.com/ntdung-tds/pcs-universal
-- The public repository publishes standards, implementation examples, adapters, documentation, and tests; it is **not** a storage location for private user projects.
-- Live GitHub status, commit SHA and Actions results must be checked on GitHub. This document is **not** evidence that workflows passed.
-- The separate `archive/PCS_2.1_LEGACY_ARCHIVE.zip` is historical and MUST NOT be loaded as current instructions in ChatGPT/Claude/Gemini.
-- Do not upload secrets, internal project content, private SRS or personal data into this public repository.
-- Public visibility does not itself grant an open-source license; reuse/distribution terms require an explicit license decision by the owner.
+- Repository public: https://github.com/ntdung-tds/pcs-universal
+- Nhánh chính: `main`.
+- Simple Mode là chế độ mặc định; [PROMPT.md](PROMPT.md) là điểm sao chép cho người dùng, [START_HERE.md](START_HERE.md) là điểm vào cho AI.
+- Mã và mẫu Advanced Mode là tùy chọn, không có dịch vụ Inbox/Gateway đang chạy chỉ nhờ xuất bản repository public.
+- Mỗi repository dự án phải riêng, mặc định private; không lưu dữ liệu người dùng trên repository PCS công khai.
+- Kiểm thử cục bộ không thay thế E2E trên từng ChatGPT/Claude/Gemini và quyền GitHub thật.

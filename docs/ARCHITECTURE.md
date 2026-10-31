@@ -13,9 +13,13 @@ flowchart TD
     G --> V[Verification, versioned handoff, QA, release gates]
 ```
 
-**Một nguồn quyết định duy nhất:** GitHub `pcs3/projects/<slug>/HEAD.json`. Google Drive không mang trạng thái hay quyết định cuối; chỉ chứa blobs bổ trợ có provenance và checksum; mỗi blob còn có bản sao trên GitHub để khôi phục kể cả khi Drive ngừng hoạt động. Không sử dụng chat history hay AI memory làm state chuẩn.
+**Advanced Mode:** GitHub `pcs3/projects/<slug>/HEAD.json` là nguồn trạng thái. **Simple Mode (mặc định):** repository riêng của dự án có `pcs/STATE.json` (`pcs3.simple.v1` bao bọc cùng cấu trúc project state) là nguồn chính. Hai định dạng không được cập nhật song song nếu chưa migration. Google Drive không mang trạng thái hay quyết định cuối; chỉ chứa blobs bổ trợ có provenance và checksum; mỗi blob còn có bản sao trên GitHub để khôi phục kể cả khi Drive ngừng hoạt động. Không sử dụng chat history hay AI memory làm state chuẩn.
 
-## Canonical data
+## Simple Mode (không cần backend trung tâm)
+
+Xem [`SIMPLE_MODE.md`](SIMPLE_MODE.md). AI tự tạo repo private, quản lý Issues, `pcs/STATE.json` và `pcs/MOMENT.md`; dùng SHA GitHub Contents để phát hiện conflict. Git history lưu vết thay đổi, nhưng **không có mức bảo đảm append-only event CAS như Advanced Mode**.
+
+## Advanced Mode canonical data
 
 - `HEAD.json`: `{schema,project,revision,event_id,event_hash,state_hash,state,updated_at}`. Dữ liệu `state` gồm product_map, architecture_map, source_refs, tasks, features, flows, releases, decisions, risks, approvals, artifacts, current.
 - `events/MOM-<date>-<uuid>.json`: bản sao **đầy đủ** của state; revision, actor, reason, at, previous_event, previous_hash, state_hash. Mỗi event có SHA-256 ổn định trên JSON sorted-key; có thể duyệt ngược từ HEAD tới genesis.

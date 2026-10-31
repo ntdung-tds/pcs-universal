@@ -21,7 +21,7 @@ export function validateState(s){
   assert(s.product_map && s.architecture_map, 'maps required (may start as unreviewed drafts)');
   const seen=new Set();
   for(const type of ['tasks','features','flows','releases']) for(const x of s[type]) {
-    assert(typeof x?.id==='string' && x.id.trim(), `${type}: missing id`);
+    assert(typeof x?.id==='string' && /^[A-Za-z][A-Za-z0-9._-]{0,79}$/.test(x.id), `${type}: invalid or missing id`);
     assert(!seen.has(x.id), `duplicate id ${x.id}`); seen.add(x.id);
     assert(allowedStatuses.has(x.status), `${x.id}: invalid status`);
     if(x.status==='ACCEPTED') {
@@ -34,16 +34,37 @@ export function validateState(s){
     }
   }
   const ids=Object.fromEntries(['tasks','features','flows','releases'].map(t=>[t,new Map(s[t].map(x=>[x.id,x]))]));
-  for(const task of s.tasks) for(const dep of (task.dependencies ?? [])) assert(ids.tasks.has(dep), `${task.id}: dependency ${dep} missing`);
+  // Dependencies form a directed acyclic graph. Cycles can make execution permanently blocked.
+  for(const task of s.tasks) {
+    assert(task.dependencies === undefined || Array.isArray(task.dependencies), `${task.id}: dependencies must be array`);
+    const deps=task.dependencies ?? [];
+    assert(new Set(deps).size === deps.length, `${task.id}: duplicate dependency`);
+    for(const dep of deps) {
+      assert(ids.tasks.has(dep), `${task.id}: dependency ${dep} missing`);
+      assert(dep !== task.id, `${task.id}: self dependency`);
+    }
+  }
+  const mark=new Map();
+  function visit(id,path=[]){
+    if(mark.get(id)===2) return;
+    assert(mark.get(id)!==1, `dependency cycle: ${[...path,id].join(' -> ')}`);
+    mark.set(id,1);
+    for(const dep of (ids.tasks.get(id).dependencies ?? [])) visit(dep,[...path,id]);
+    mark.set(id,2);
+  }
+  for(const id of ids.tasks.keys()) visit(id);
   for(const feat of s.features) {
+    assert(new Set(feat.required_tasks ?? []).size === (feat.required_tasks ?? []).length, `${feat.id}: duplicate required task`);
     for(const id of (feat.required_tasks ?? [])) assert(ids.tasks.has(id), `${feat.id}: missing task ${id}`);
     if(feat.status==='ACCEPTED') for(const id of (feat.required_tasks ?? [])) assert(ids.tasks.get(id).status==='ACCEPTED', `${feat.id}: task ${id} not accepted`);
   }
   for(const flow of s.flows){
+    assert(new Set(flow.required_features ?? []).size === (flow.required_features ?? []).length, `${flow.id}: duplicate required feature`);
     for(const id of (flow.required_features ?? [])) assert(ids.features.has(id), `${flow.id}: missing feature ${id}`);
     if(flow.status==='ACCEPTED') for(const id of (flow.required_features ?? [])) assert(ids.features.get(id).status==='ACCEPTED', `${flow.id}: feature ${id} not accepted`);
   }
   for(const rel of s.releases){
+    assert(new Set(rel.required_flows ?? []).size === (rel.required_flows ?? []).length, `${rel.id}: duplicate required flow`);
     for(const id of (rel.required_flows ?? [])) assert(ids.flows.has(id), `${rel.id}: missing flow ${id}`);
     if(rel.status==='ACCEPTED') for(const id of (rel.required_flows ?? [])) assert(ids.flows.get(id).status==='ACCEPTED', `${rel.id}: flow ${id} not accepted`);
   }

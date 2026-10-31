@@ -1,3 +1,14 @@
+# PCS 3.0.2 — Simple Mode enhancement test report
+
+**Ngày:** 2026-11-01. **Mức kiểm định:** local automated tests + DOCX render, chưa phải nghiệm thu E2E trong ChatGPT/Claude/Gemini.
+
+- 93/93 tests PASSED (72 tests trước + 21 tests mới về dependency DAG, duplicate refs, Simple Mode state/Moment, local checkpoint, GitHub Issues read/create/dedupe và chặn quyền thiếu).
+- `tools/pcs-security-audit.mjs` không phát hiện vấn đề trong bộ rule hiện có; không thay thế secret scanning/SAST thực tế.
+- Simple Mode mặc định: user copy PROMPT + gửi SRS; AI tự tạo thư mục/hồ sơ theo khả năng. Chưa nghiệm thu tính năng tạo repository và cập nhật Issues thật trên mọi ứng dụng AI.
+- GitHub Projects tự động đồng bộ **chưa triển khai**; tùy chọn sử dụng GH UI/automation có quyền.
+- `ACCEPTED` hiện được kiểm tra theo cấu trúc metadata; chưa xác thực nguồn chứng cứ/human approval bên ngoài một cách đầy đủ. AI phải tự kiểm chứng qua công cụ hoặc ghi EXTERNAL_UNVERIFIED, không được tuyên bố verified.
+- Concurrency: Simple Mode dùng Git blob SHA và Git history, không bảo đảm atomic checkpoint liên nhiều tệp. Advanced Mode cần setup và nghiệm thu riêng.
+
 # PCS 3.0.2 — Verification and acceptance report
 
 **Date:** 2026-10-31 · **Scope:** local/offline reference implementation. No changes to IAICT production or repository.

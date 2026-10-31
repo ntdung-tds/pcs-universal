@@ -1,3 +1,12 @@
+# PCS 3.0.2 — Simple Mode Enhancement (GitHub public edition)
+
+- Simple Mode is now the default: user copies PROMPT.md and submits SRS, agent creates a private project repository and owns PCS setup. No mandatory GitHub App/Inbox/Gateway/CLI.
+- Added `docs/SIMPLE_MODE.md`, `docs/SIMPLE_MODE_QUALITY.md`, minimal state/Moment templates and optional terminal helper `runtime/pcs3-simple.mjs`.
+- GitHub Issues adapter `runtime/pcs3-issues.mjs`: preview-first, task marker and duplicate detection. GitHub Projects remains optional and is not falsely claimed to be auto-synchronized.
+- Fixed task dependency cycle/self-dependency/duplicate checks and duplicate required tasks/features/flows.
+- QA metadata remains *structural evidence only*; explicit external verification is required for CI/security/human acceptance.
+- Simple Mode and Advanced Mode storage schemas are distinct and must not be mixed without migration.
+
 # PCS 3.0.2 — Reliability & Interoperability Hardening (2026-10-31)
 
 Retains every PCS 3.0.1 security feature. Follows user review "Các Vùng Cần Cải Thiện Chi Tiết (Primary Growth Areas)" and adds a fourth issue: branch protection vs. Inbox write capability.

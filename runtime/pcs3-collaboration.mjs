@@ -123,7 +123,7 @@ export function authorizeDecision(state,{
     assert(issue.body.includes('<!-- pcs-lead-governance -->'),'lead command requires lead-governance Issue');
   }
   const decision=Object.freeze({action,proposalId,actor_login:approver,authority:owner?'OWNER':'DELEGATED_LEAD',issue_number:issue.number,comment_id:comment.id,comment_url:comment.html_url??null,observed_at:now(),command_digest:sha256(comment.body),tasks:Object.freeze([...parsed.tasks])});
-  verifiedDecisionObjects.set(decision,{digest:sha256(stable(decision)),stateIdentity:state,lead_epoch:c.lead_epoch,owner_login:c.policy.owner_login});
+  verifiedDecisionObjects.set(decision,{digest:sha256(stable(decision)),stateDigest:sha256(stable(state)),stateIdentity:state,lead_epoch:c.lead_epoch,owner_login:c.policy.owner_login});
   return decision;
 }
 
@@ -134,6 +134,7 @@ export function applyDecision(state,evidence){
   assert(sha256(stable(evidence))===seal.digest,'TAMPERED_DECISION: evidence was modified after verification');
   assert(c.lead_epoch===seal.lead_epoch,'STALE_LEAD_EPOCH: reauthorize on current project state');
   assert(c.policy.owner_login===seal.owner_login,'STALE_OWNER_POLICY: reauthorize');
+  assert(sha256(stable(state))===seal.stateDigest,'STALE_GOVERNANCE_STATE: proposal, scope or permissions changed; reauthorize');
   if(evidence.authority==='DELEGATED_LEAD'){
     const l=c.lead,la=c.agents.find(a=>a.id===l?.agent_id);
     assert(!!l&&l.epoch===c.lead_epoch&&la?.github_login===evidence.actor_login

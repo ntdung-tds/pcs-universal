@@ -46,3 +46,22 @@ export function decodeConfidentialArtifact(envelope,{slug,keyBase64=process.env.
   const decipher=createDecipheriv('aes-256-gcm',key,iv);decipher.setAAD(Buffer.from(`pcs3|${slug}|CONFIDENTIAL`));decipher.setAuthTag(tag);
   return Buffer.concat([decipher.update(body),decipher.final()]);
 }
+
+/** Gate public project STATE by explicit project classification, not repository visibility alone.
+ * A prompt or AI-authored flag is not authenticated Owner approval: provider identity and
+ * protected-branch review must be verified separately for sensitive decisions.
+ */
+export function assertPublicProjectSafe(state) {
+  if(state?.policy?.repository_visibility!=='PUBLIC' || state?.policy?.public_content_reviewed!==true
+      || state?.policy?.content_classification!=='PUBLIC')
+    throw Error('PUBLIC_POLICY_REQUIRED: explicit public project/content review required');
+  for(const key of ['source_refs','tasks','features','flows','releases','decisions','risks','approvals','artifacts']){
+    if(!Array.isArray(state[key]))throw Error('PUBLIC_STATE_INVALID: '+key);
+    for(const item of state[key]){
+      if(item?.classification!=='PUBLIC')
+        throw Error('PUBLIC_DATA_BLOCKED: '+key+' must be explicitly classified PUBLIC');
+    }
+  }
+  assertSafeState(state);
+  return true;
+}

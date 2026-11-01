@@ -44,7 +44,7 @@ export function initCollaboration(state,{repoOwner,repoOwnerType='User',maxAgent
   assert(repoOwnerType==='User', 'ORG_OWNER_REQUIRES_EXPLICIT_OWNER_POLICY');
   const owner=login(repoOwner,'repo owner');
   assert(Number.isInteger(maxAgents)&&maxAgents>=1&&maxAgents<=100,'invalid agent cap');
-  state.collaboration={schema:'pcs3.collaboration.v1',policy:{owner_login:owner,max_active_agents:maxAgents,lead_can_approve_normal:true,owner_required_for_sensitive:true},lead:null,lead_epoch:0,agents:[],proposals:[],assignments:[],history:[]};
+  state.collaboration={schema:'pcs3.collaboration.v1',policy:{owner_login:owner,max_active_agents:maxAgents,lead_can_approve_normal:true,self_claim_normal:true,owner_required_for_sensitive:true},lead:null,lead_epoch:0,agents:[],proposals:[],assignments:[],history:[]};
   validateCollaboration(state.collaboration);return state;
 }
 export function validateCollaboration(c){

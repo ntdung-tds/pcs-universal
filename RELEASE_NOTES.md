@@ -1,3 +1,18 @@
+# PCS 3.1.0 — Unified Contributor Workflow & Owner-first Acceptance (2026-11-01)
+
+**Release scope:** One Lead Agent with delegated authority, dynamic contributors who can propose work, technical acceptance by Lead, and final product feedback by Project Owner without requiring them to test code.
+
+- Adds `runtime/pcs3-delivery.mjs`: strict Lead technical acceptance based on authenticated GitHub PR author/reviewer, merged status, PR-head SHA and complete successful check-runs; rejects self-review and stale decisions.
+- Owner can agree/request changes/disagree on a feature, business flow or release using an authenticated GitHub Issue comment tied to the specific reviewed commit; event is separate from technical review.
+- Informal chat feedback is retained in `delivery.owner_notes` with `UNVERIFIED_CHAT`, never promoted to formal Owner authorization. Lead can still plan and execute normal tasks based on it.
+- `runtime/pcs3-agent-operator.mjs` supports `technical-review` and `owner-feedback` commands; `recommendNextTasks()` suggests available dependency-ready tasks after technical review. Protected-branch PR fallback is still `REVIEW_REQUIRED`, not applied.
+- State schema: remains `pcs3.simple.v1` wrapper around `pcs3.project-state.v1`, with optional `delivery` ledger; single-agent and existing project states remain supported. New emptyState version field is `3.1.0`.
+- New [unified workflow and acceptance guide](docs/PCS_3_1_UNIFIED.md), [Owner review Issue template](templates/owner/REVIEW_ISSUE.md), and security/regression tests.
+
+**Not included / not certified:** automatic agent spawning across chat apps, always-on coordinator, verified human identity when using a shared GitHub token, live multi-provider E2E, automatic migration of historical Advanced HEAD repositories, production release, or independent validation of every external CI/QA claim. Enforce GitHub branch protection and independent principals before relying on automated approvals.
+
+---
+
 # PCS Governance Hardening — 2026-11-01
 
 - Vá P0: chuẩn hóa/fail-closed rủi ro; bất biến bằng chứng phê duyệt theo toàn bộ state; chặn quyết định cũ sau khi Lead bị thu hồi/hết hạn.

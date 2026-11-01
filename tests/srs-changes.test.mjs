@@ -7,7 +7,7 @@ const decide=(id,decision='APPROVED')=>({kind:'DECIDE',id,decision,actor:'owner'
 test('no Owner SRS section needed: derive active task/feature',()=>{
  assert.equal(activeContext(doc).item_key,'FEAT-2');
  const out=proposeFromActive(HEADER,doc,{id:'CR-1',before:'12 characters',after:'8 characters',reason:'Owner change',requirement_key:'password-length'});
- assert.equal(out.event.item_key,'FEAT-2');assert.equal(parseLedger(out.markdown).events.length,1);
+ assert.equal(out.event.item_key,'FEAT-2.password-length');assert.equal(parseLedger(out.markdown).events.length,1);
 });
 test('ambiguous mapping falls back to task, not invented section',()=>{
  const d={state:{...doc.state,features:[{id:'FEAT-1',required_tasks:['TASK-5']},{id:'FEAT-2',required_tasks:['TASK-5']}]}};

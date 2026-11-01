@@ -4,7 +4,7 @@
 
 | Mức | Ví dụ | GitHub/Drive |
 |---|---|---|
-| `PUBLIC` | tài liệu đã duyệt công khai | repo phù hợp; mặc định PCS vẫn yêu cầu private |
+| `PUBLIC` | tài liệu đã duyệt công khai | repo Public hoặc Private do Owner chọn; Public chỉ dùng khi tất cả nội dung được phép công khai và đã kiểm tra history |
 | `INTERNAL` | kế hoạch/SRS nội bộ không chứa bí mật | private repo, phân quyền tối thiểu; nếu Drive dùng được thì lưu thêm |
 | `CONFIDENTIAL` | thiết kế bí mật, hợp đồng cho phép mã hóa lưu trữ | **AES-256-GCM trước khi upload ở cả GitHub & Drive**; bắt buộc có key riêng và quyền lưu hợp pháp |
 | `RESTRICTED` | khóa truy cập, dữ liệu thuộc diện cấm chuyển kho, thông tin có điều kiện pháp lý đặc biệt | **Mặc định chặn**, không đẩy nguyên văn; cần thiết kế, quyền và phê duyệt riêng |

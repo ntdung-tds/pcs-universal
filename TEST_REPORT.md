@@ -1,3 +1,12 @@
+# PCS 3.1.1 — Branch Guard validation
+
+- Added tests/branch-guard.test.mjs with authenticated Owner consent, plan SHA, independent caller identity, policy visibility and fail-closed checks.
+- New tool supports plan / verify read-only and apply after GitHub Owner consent. No implicit admin writes.
+- Verified output counts and SHA-256 manifest belong to GitHub Actions on the final Pull Request and main commit; do not infer production readiness.
+- Residual gates: live E2E with GitHub Pro/Team private repo and distinct bot principal; verify plan support, branch behavior and CI/reviewer hardening independently. GitHub App installation tokens may require a different verified identity channel, not silently assumed supported.
+
+---
+
 # PCS Unified 3.1.0 — Validation Report (2026-11-01)
 
 **Đối tượng kiểm thử:** Unified Contributor Workflow — Lead technical review, contributor task proposal/next-task recommendation, Owner product feedback (GitHub verified vs unverified chat), solo-project backward compatibility.

@@ -1,6 +1,6 @@
 # PCS — Universal AI Project System
 
-**Phiên bản công khai:** PCS 3.1.0 — Unified Contributor Workflow · **Dành cho:** ChatGPT, Claude, Gemini, Codex, Claude Code, Cursor và các AI có công cụ phù hợp.
+**Phiên bản công khai:** PCS 3.1.1 — Unified Contributor Workflow · **Dành cho:** ChatGPT, Claude, Gemini, Codex, Claude Code, Cursor và các AI có công cụ phù hợp.
 
 > **Cách sử dụng:** Mở **[PROMPT.md](PROMPT.md)** → sao chép prompt → dán vào ChatGPT/Claude/Gemini → đính kèm SRS, SOW, đề cương, hoặc chỉ mô tả ý tưởng. **Không cần tải hoặc cài PCS bằng tay cho mỗi dự án.**
 
@@ -8,7 +8,7 @@
 
 **Cập nhật bảo mật 01/11/2026:** Đã vá lỗi phê duyệt rủi ro, bằng chứng bị thay đổi và quyền Lead hết hạn; bổ sung PR chờ review khi nhánh chính được bảo vệ. [Chi tiết và giới hạn còn lại](docs/GOVERNANCE_HARDENING_20261101.md). Chưa chứng nhận E2E giữa các AI trên repository dự án thật.
 
-## Bắt đầu trong 3 bước
+**Mới trong PCS 3.1.1:** Lead Agent tự kiểm tra rulesets và bảo vệ nhánh mặc định; nếu chưa được bảo vệ, Lead lập phương án và chỉ áp dụng bằng quyền Admin riêng sau khi Owner xác nhận có chứng cứ. Không yêu cầu người dùng tự thiết lập từng tùy chọn. [Hướng dẫn Branch Governance](docs/BRANCH_GOVERNANCE.md).\n\n## Bắt đầu trong 3 bước
 
 1. Vào **[PROMPT.md](PROMPT.md)** và sao chép đoạn **“Prompt chuẩn”**.
 2. Mở ứng dụng AI bạn dùng, dán prompt và cung cấp yêu cầu / file SRS / SOW nếu có.
@@ -59,12 +59,12 @@ Repo công khai này **không tự cấp quyền** cho AI chạy mã, clone, t�
 | Nguyên tắc chung | [`adapters/UNIVERSAL_INSTRUCTIONS.md`](adapters/UNIVERSAL_INSTRUCTIONS.md) |
 | Kiến trúc/lưu trữ | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/STORAGE_POLICY.md`](docs/STORAGE_POLICY.md) |
 | Bảo mật | [`SECURITY.md`](SECURITY.md), [`docs/DATA_CLASSIFICATION.md`](docs/DATA_CLASSIFICATION.md) |
-| Cộng tác agent/duyệt | [`docs/PCS_3_1_UNIFIED.md`](docs/PCS_3_1_UNIFIED.md), [`docs/AGENT_COLLABORATION.md`](docs/AGENT_COLLABORATION.md), [`runtime/pcs3-delivery.mjs`](runtime/pcs3-delivery.mjs) |
+| Tự bảo vệ nhánh theo Owner consent | [`docs/BRANCH_GOVERNANCE.md`](docs/BRANCH_GOVERNANCE.md), [`tools/pcs-branch-guard.mjs`](tools/pcs-branch-guard.mjs) |\n| Cộng tác agent/duyệt | [`docs/PCS_3_1_UNIFIED.md`](docs/PCS_3_1_UNIFIED.md), [`docs/AGENT_COLLABORATION.md`](docs/AGENT_COLLABORATION.md), [`runtime/pcs3-delivery.mjs`](runtime/pcs3-delivery.mjs) |
 | Simple Mode và quản trị | [`docs/SIMPLE_MODE.md`](docs/SIMPLE_MODE.md), [`docs/SIMPLE_MODE_QUALITY.md`](docs/SIMPLE_MODE_QUALITY.md) |
 | CLI / code mẫu | [`runtime/`](runtime/) |
 | Kiểm thử, giới hạn | [`TEST_REPORT.md`](TEST_REPORT.md) |
 | Hướng dẫn advanced | [`docs/`](docs/) |
 
-**Trạng thái:** PCS 3.1.0 có bộ kiểm thử hồi quy tự động và kiểm tra toàn vẹn gói; xem kết quả GitHub Actions và `TEST_REPORT.md`, nhưng **chưa chứng nhận quy trình end-to-end trên mọi nền tảng AI hoặc tài khoản GitHub cụ thể**.
+**Trạng thái:** PCS 3.1.1 có bộ kiểm thử hồi quy tự động và kiểm tra toàn vẹn gói; xem kết quả GitHub Actions và `TEST_REPORT.md`, nhưng **chưa chứng nhận quy trình end-to-end trên mọi nền tảng AI hoặc tài khoản GitHub cụ thể**.
 
 **Quyền sử dụng lại:** Repo đang công khai để đọc và tham khảo. Chưa gắn giấy phép mã nguồn mở; chủ sở hữu cần quyết định giấy phép nếu muốn cho phép bên khác tái sử dụng/phân phối rộng rãi.

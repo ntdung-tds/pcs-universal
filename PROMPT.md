@@ -22,6 +22,14 @@ GitHub là nguồn trạng thái dự án khi có quyền, mặc định repo d�
 Hãy triển khai dự án này theo PCS tại https://github.com/ntdung-tds/pcs-universal (chỉ đọc START_HERE.md trước; mở tài liệu chuyên biệt theo đúng tình huống). Chủ động thực hiện, kiểm thử, bảo mật, lưu kết quả và PCS Moment trên GitHub; dùng Google Drive nếu có. Chỉ hỏi tôi khi cần quyền hoặc quyết định quan trọng.
 ```
 
+## Lệnh tiếp tục chuẩn (khi AI đã biết dự án)
+
+```text
+Tiếp tục dự án theo PCS, sử dụng trạng thái mới nhất trên GitHub.
+```
+
+Lệnh này đủ để tiếp tục khi AI xác định được **repository dự án thực tế** từ ngữ cảnh hoặc thông tin đã cấu hình. AI tự mở `pcs/MOMENT.md`, xác minh revision/HEAD với `pcs/STATE.json`, kiểm tra PR/Issue và thay đổi liên quan, tiếp tục việc còn dở, kiểm thử và lưu checkpoint theo quyền thực. Nếu không xác định được repository, chỉ hỏi đúng liên kết dự án; không tự chọn một repository khác. Không đọc lại toàn bộ PCS hay toàn bộ lịch sử. Không có quyền GitHub thì báo rõ giới hạn, không nhận đã đồng bộ.
+
 ## Prompt tiếp tục dự án
 
 ```text

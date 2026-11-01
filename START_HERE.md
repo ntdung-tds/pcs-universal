@@ -2,6 +2,10 @@
 
 This repository is the **public PCS toolkit**, not a project state store. **Read this entrypoint first, then load only task-relevant PCS files. Never bulk-read the repo or historical archives.** The user's project, requirements and current verified state take priority over PCS reference material.
 
+## Standard resume command
+
+User command: **"Tiếp tục dự án theo PCS, sử dụng trạng thái mới nhất trên GitHub."** Treat this as resume intent for the **identified project repository**, not this public PCS toolkit. If the project repo is already known, proceed without asking the user to repeat configuration. If it is not known or multiple projects are plausible, request only its link; never guess. Read the latest project Moment, verify canonical STATE revision and GitHub HEAD, inspect only relevant changes, task, evidence and policies, then continue within actual permissions. Write a verified checkpoint only when authorized; otherwise report what was blocked. No full documentation reload or automatic claim of GitHub access.
+
 ## Start or resume
 1. Identify the **project repository** and current task. For an existing project, first read `pcs/MOMENT.md`, check its revision against the canonical `pcs/STATE.json` and HEAD, then inspect only the selected task, relevant PR/Issues, requirements and code. Do not paste the full state into the context by default. Do not reload unchanged PCS handbook/code in each chat. For a new project, read `docs/SIMPLE_MODE.md` and use `templates/simple/STATE.example.json` only to initialize a single `pcs3.simple.v1` state in a **private** project repo by default.
 2. Check real connector, GitHub, filesystem, test and deployment access. Do not invent access, CI, approvals or changes. If persistence is blocked, report it and do safe work only.

@@ -16,7 +16,7 @@ GitHub là nguồn lưu trữ và quản lý trạng thái chính: khi có quy�
 
 Tự kiểm tra các kết nối cần thiết (GitHub, Drive, môi trường chạy và dịch vụ khác). Nếu thiếu quyền, chỉ hỏi tôi cách cấp quyền đúng lúc, không yêu cầu thiết lập thừa, không tự nhận đã kết nối hoặc đã lưu khi chưa xác minh. Trước thao tác nguy cơ cao hoặc thay đổi production, cần có phê duyệt phù hợp.
 
-Mặc định một AI xử lý dự án. Nếu agent khác muốn tham gia, tuân thủ docs/AGENT_COLLABORATION.md: agent được tự đề xuất công việc hoặc xin tham gia chưa có task; chỉ bạn (Owner) hoặc Lead được bạn ủy quyền mới được duyệt. Quyết định nhạy cảm luôn cần Owner, không tự duyệt, không cho hai agent cùng chiếm một task. Phân công/đề xuất đều phải lưu ở cùng pcs/STATE.json với GitHub evidence xác thực, kiểm soát revision và hạn chế quyền.
+Mặc định một AI xử lý dự án. Nếu agent khác muốn tham gia, tuân thủ docs/AGENT_COLLABORATION.md: agent được tự đề xuất công việc hoặc xin tham gia chưa có task; chỉ bạn (Owner) hoặc Lead được bạn ủy quyền mới được duyệt. Quyết định nhạy cảm hoặc thiếu phân loại rủi ro luôn cần Owner, không tự duyệt, không cho hai agent cùng chiếm một task. Trước khi ghi quyết định, xác minh lại phiên quyền Lead, bản chụp trạng thái và comment GitHub; nếu kết quả là REVIEW_REQUIRED thì đó chỉ là PR chờ review, chưa phải đã duyệt hay đã cấp quyền. Phân công/đề xuất đều phải lưu ở cùng pcs/STATE.json với GitHub evidence xác thực, kiểm soát revision và hạn chế quyền.
 
 Tự quản lý trạng thái và điểm tiếp tục; sau mỗi chặng quan trọng, thông báo ngắn gọn phần đã làm, phần đã kiểm chứng, phần còn thiếu và bước tiếp theo. Không đánh dấu chức năng hoàn tất nếu các phụ thuộc liên quan hoặc kiểm thử bắt buộc chưa đạt.
 

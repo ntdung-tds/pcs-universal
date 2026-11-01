@@ -27,7 +27,9 @@ function fixture({race=false,deny=false}={}){
       if(deny)status=403;
       else if(current!==head)status=422;
       else{assert.equal(JSON.parse(opts.body).force,false);current=JSON.parse(opts.body).sha;data={ref:'refs/heads/main'};}
-    }else throw Error('mock unexpected route '+method+' '+path);
+    }else if(path==='/git/refs'&&method==='POST'){data={ref:JSON.parse(opts.body).ref};}
+    else if(path==='/pulls'&&method==='POST'){data={number:7,html_url:'https://github.com/alice/project/pull/7'};}
+    else throw Error('mock unexpected route '+method+' '+path);
     return new Response(JSON.stringify(data),{status});
   };
   return {fetcher:responder,calls,doc,getHead:()=>current};
@@ -46,12 +48,27 @@ test('optimistic checkpoint: stale writer cannot push over another writer',async
   await assert.rejects(()=>o.decide({expectedRevision:1,issueNumber:10,commentId:99,action:'approve',target:'JOIN01'}),/GITHUB_WRITE_BLOCKED_422/);
   assert.equal(f.getHead(),'e'.repeat(40));
 });
-test('branch rules 403 causes no claim of published governance',async()=>{
+test('branch rules 403 cannot publish directly and instead returns review-required PR',async()=>{
   const f=fixture({deny:true});const o=new AgentGovernanceOperator({repo:'alice/project',token:'token',fetcher:f.fetcher});
-  await assert.rejects(()=>o.decide({expectedRevision:1,issueNumber:10,commentId:99,action:'approve',target:'JOIN01'}),/GITHUB_WRITE_BLOCKED_403/);
+  const result=await o.decide({expectedRevision:1,issueNumber:10,commentId:99,action:'approve',target:'JOIN01'});
+  assert.equal(result.status,'REVIEW_REQUIRED');assert.equal(f.getHead(),'a'.repeat(40));
 });
 test('expected revision is mandatory to avoid silent overwrite',async()=>{
   const f=fixture();const o=new AgentGovernanceOperator({repo:'alice/project',token:'token',fetcher:f.fetcher});
   await assert.rejects(()=>o.decide({expectedRevision:5,issueNumber:10,commentId:99,action:'approve',target:'JOIN01'}),/CONFLICT/);
   assert.equal(f.calls.filter(x=>x.method==='POST').length,0);
+});
+
+test('protected default branch offers PR for review, not false APPLIED status',async()=>{
+  const f=fixture({deny:true});const op=new AgentGovernanceOperator({repo:'alice/project',token:'token',fetcher:f.fetcher});
+  const result=await op.decide({expectedRevision:1,issueNumber:10,commentId:99,action:'approve',target:'JOIN01'});
+  assert.equal(result.status,'REVIEW_REQUIRED');
+  assert.equal(result.pr_number,7);
+  assert.equal(f.getHead(),'a'.repeat(40),'default branch was not changed');
+  assert.ok(f.calls.some(x=>x.method==='POST'&&x.path==='/git/refs'));
+  assert.ok(f.calls.some(x=>x.method==='POST'&&x.path==='/pulls'));
+});
+test('operator accepts scoped branch names without loosening path validation',()=>{
+  assert.doesNotThrow(()=>new AgentGovernanceOperator({repo:'alice/project',token:'token',branch:'feature/home',fetcher:async()=>{}}));
+  assert.throws(()=>new AgentGovernanceOperator({repo:'alice/project',token:'token',branch:'foo/../main',fetcher:async()=>{}}),/invalid branch/);
 });

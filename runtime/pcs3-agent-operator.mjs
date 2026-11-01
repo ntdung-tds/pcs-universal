@@ -12,7 +12,7 @@ import {assert,sha256,stable,now} from './pcs3-core.mjs';
 export class AgentGovernanceOperator extends GitHubGovernanceSource {
   constructor({repo,token,branch='main',fetcher=globalThis.fetch}){
     super({repo,token,fetcher});
-    assert(/^[\w.-]+$/.test(branch),'invalid branch');this.branch=branch;
+    assert(typeof branch==='string'&&branch.length<=150&&branch.split('/').every(part=>part.length>0&&part!=='.'&&part!=='..'&&/^[A-Za-z0-9._-]+$/.test(part)),'invalid branch');this.branch=branch;
   }
   async api(method,path,payload){
     const r=await this.fetcher(`https://api.github.com/repos/${this.repo}${path}`,{method,headers:{Authorization:`Bearer ${this.token}`,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'},body:JSON.stringify(payload)});
@@ -38,10 +38,26 @@ export class AgentGovernanceOperator extends GitHubGovernanceSource {
     const tree=await this.api('POST','/git/trees',{base_tree:before.tree,tree:blobs});
     const commit=await this.api('POST','/git/commits',{message:`PCS governance: ${reason} (r${updated.revision})`,tree:tree.sha,parents:[before.sha]});
     // Non-force branch update rejects stale commits when another agent advanced HEAD.
-    await this.api('PATCH',`/git/refs/heads/${encodeURIComponent(this.branch)}`,{sha:commit.sha,force:false});
+    try{
+      await this.api('PATCH',`/git/refs/heads/${encodeURIComponent(this.branch)}`,{sha:commit.sha,force:false});
+    }catch(error){
+      // A protected default branch requires a reviewable PR, not a bypass or fake publish.
+      if(!String(error).includes('GITHUB_WRITE_BLOCKED_403'))throw error;
+      const current=await this.get(`/git/ref/heads/${encodeURIComponent(this.branch)}`);
+      assert(current.object?.sha===before.sha,'CONFLICT: default branch changed before PR; reload');
+      const reviewBranch='pcs/governance-r'+updated.revision+'-'+commit.sha.slice(0,10);
+      await this.api('POST','/git/refs',{ref:'refs/heads/'+reviewBranch,sha:commit.sha});
+      const pr=await this.api('POST','/pulls',{title:'PCS governance r'+updated.revision+': '+reason,
+        head:reviewBranch,base:this.branch,body:'PCS governance change pending independent review. This PR is NOT an approved or published checkpoint. Validate GitHub identity evidence, project policy and CI before merging.',
+        maintainer_can_modify:false});
+      assert(pr.number>0,'PR_CREATION_UNVERIFIED');
+      return {status:'REVIEW_REQUIRED',revision:updated.revision,proposed_commit:commit.sha,
+        pr_number:pr.number,pr_url:pr.html_url,event:eventName,
+        warning:'Governance state is NOT active until authorized PR merge and verification.'};
+    }
     const confirmed=await this.get(`/git/ref/heads/${encodeURIComponent(this.branch)}`);
     assert(confirmed.object?.sha===commit.sha,'PUBLISH_UNVERIFIED: remote branch did not retain the governance checkpoint');
-    return {revision:updated.revision,commit:commit.sha,event:eventName,url:`https://github.com/${this.repo}/commit/${commit.sha}`};
+    return {status:'APPLIED',revision:updated.revision,commit:commit.sha,event:eventName,url:`https://github.com/${this.repo}/commit/${commit.sha}`};
   }
   async bootstrap({expectedRevision,maxAgents=10}){
     const prior=await this.loadSnapshot();assert(prior.doc.revision===expectedRevision,'CONFLICT: reload state');

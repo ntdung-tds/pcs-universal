@@ -6,6 +6,8 @@
 
 **[📋 XEM VÀ SAO CHÉP PROMPT](PROMPT.md)** · **[Cách dùng đơn giản](docs/SIMPLE_MODE.md)** · [Dành cho AI](START_HERE.md) · [Advanced Mode](docs/INSTALL_AND_ACTIVATE.md)
 
+**Cập nhật bảo mật 01/11/2026:** Đã vá lỗi phê duyệt rủi ro, bằng chứng bị thay đổi và quyền Lead hết hạn; bổ sung PR chờ review khi nhánh chính được bảo vệ. [Chi tiết và giới hạn còn lại](docs/GOVERNANCE_HARDENING_20261101.md). Chưa chứng nhận E2E giữa các AI trên repository dự án thật.
+
 ## Bắt đầu trong 3 bước
 
 1. Vào **[PROMPT.md](PROMPT.md)** và sao chép đoạn **“Prompt chuẩn”**.

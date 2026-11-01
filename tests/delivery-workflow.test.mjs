@@ -60,7 +60,7 @@ test('3.1: no acceptance if PR author differs from assigned agent',()=>{
   assert.throws(()=>technical(s,{pr:p}),/PR_AUTHOR_NOT_ASSIGNED_AGENT/);
 });
 test('3.1: no acceptance on failing CI',()=>{
-  const s=setup();assert.throws(()=>technical(s,{checks:{check_runs:[{status:'completed',conclusion:'failure'}]}}),/CI_NOT_FULLY_GREEN/);
+  const s=setup();assert.throws(()=>technical(s,{checks:{total_count:1,check_runs:[{status:'completed',conclusion:'failure'}]}}),/CI_NOT_FULLY_GREEN/);
 });
 test('3.1: no acceptance with zero check runs',()=>{
   const s=setup();assert.throws(()=>technical(s,{checks:{check_runs:[]}}),/CHECK_RUNS_INCOMPLETE/);

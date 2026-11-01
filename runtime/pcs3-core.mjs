@@ -201,9 +201,9 @@ export class PCS3 {
   async load(slug){const h=await this.github.getFile(this.headPath(slug));if(!h)return null;const head=JSON.parse(h.buffer.toString());
     assert(head.schema==='pcs3.head.v1' && head.state?.slug===slug,'HEAD invalid');validateState(head.state);
     assert(head.state_hash===sha256(stable(head.state)),'HEAD state hash mismatch');return {...head,blob_sha:h.sha};}
-  async init(slug,name,actor='agent',{requestId=null,requestDigest=null}={}){
+  async init(slug,name,actor='agent',{requestId=null,requestDigest=null,publicProjectReviewed=false}={}){
     const state=emptyState(slug,name,actor);
-    if(arguments[3]?.publicProjectReviewed===true){state.policy.repository_visibility='PUBLIC';state.policy.public_content_reviewed=true;state.policy.content_classification='PUBLIC';}
+    if(publicProjectReviewed===true){state.policy.repository_visibility='PUBLIC';state.policy.public_content_reviewed=true;state.policy.content_classification='PUBLIC';}
     await this.ensurePrivacy(state);assert(!(await this.load(slug)), `project already exists ${slug}`);
     return this.commit(slug,state,{expectedRevision:null,actor,reason:'bootstrap from supplied project brief',requestId,requestDigest});
   }

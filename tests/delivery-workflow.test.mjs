@@ -5,7 +5,7 @@ import {validateSimple,makeSimpleState,renderMoment} from '../runtime/pcs3-simpl
 import {initCollaboration} from '../runtime/pcs3-collaboration.mjs';
 import {
   validateDelivery,authorizeTechnicalAcceptance,applyTechnicalAcceptance,
-  authorizeOwnerFeedback,applyOwnerFeedback,latestOwnerFeedback,recommendNextTasks
+  authorizeOwnerFeedback,applyOwnerFeedback,latestOwnerFeedback,recommendNextTasks,noteConversationFeedback
 } from '../runtime/pcs3-delivery.mjs';
 
 const sha='a'.repeat(40), merge='b'.repeat(40);
@@ -132,4 +132,22 @@ test('3.1: schema rejects manually forged duplicate feedback and unknown technic
   const s=setup(),e=feedback(s);applyOwnerFeedback(s,e);
   s.delivery.owner_feedback.push({...s.delivery.owner_feedback[0]});
   assert.throws(()=>validateDelivery(s),/comment replay/);
+});
+
+test('3.1: Owner chat preference is recorded but not counted as verified approval',()=>{
+  const s=setup();
+  noteConversationFeedback(s,{scope:'release',target:'R1',preference:'AGREED',summary:'Giao diện ổn, tiếp tục'});
+  assert.equal(s.delivery.owner_notes[0].verification,'UNVERIFIED_CHAT');
+  assert.equal(latestOwnerFeedback(s,'release','R1'),null,'chat cannot forge verified release approval');
+});
+test('3.1: CI check-runs total count cannot exceed fetched page',()=>{
+  const s=setup();assert.throws(()=>technical(s,{checks:{
+    total_count:101,check_runs:[{status:'completed',conclusion:'success'}]
+  }}),/CHECK_RUNS_INCOMPLETE/);
+});
+test('3.1: conversation note cannot falsely claim verified approval',()=>{
+  const s=setup();
+  noteConversationFeedback(s,{scope:'feature',target:'F1',preference:'CHANGES_REQUESTED',summary:'Điều chỉnh màn hình'});
+  s.delivery.owner_notes[0].verification='VERIFIED';
+  assert.throws(()=>validateDelivery(s),/chat note cannot masquerade/);
 });

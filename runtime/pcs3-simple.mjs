@@ -9,6 +9,7 @@ import {fileURLToPath} from 'node:url';
 import {emptyState,validateState,now,stable,sha256,assert,validSlug} from './pcs3-core.mjs';
 import {assertSafeState} from './pcs3-security.mjs';
 import {validateProjectCollaboration} from './pcs3-collaboration.mjs';
+import {validateDelivery,latestOwnerFeedback} from './pcs3-delivery.mjs';
 
 export function makeSimpleState(slug,name,actor='agent') {
   return {schema:'pcs3.simple.v1',revision:1,updated_at:now(),state:emptyState(slug,name,actor)};
@@ -16,7 +17,7 @@ export function makeSimpleState(slug,name,actor='agent') {
 export function validateSimple(doc) {
   assert(doc && doc.schema==='pcs3.simple.v1','simple schema must be pcs3.simple.v1');
   assert(Number.isSafeInteger(doc.revision) && doc.revision>0,'simple revision must be positive integer');
-  validateState(doc.state); validateProjectCollaboration(doc.state); assertSafeState(doc.state);
+  validateState(doc.state); validateProjectCollaboration(doc.state); validateDelivery(doc.state); assertSafeState(doc.state);
   assert(!doc.updated_at || !Number.isNaN(Date.parse(doc.updated_at)),'simple updated_at invalid');
   assert(stable(doc).length<=750000,'simple state too large');
   return true;
@@ -37,7 +38,7 @@ export function renderMoment(doc) {
     `- **Last completed step:** ${s.current.last_completed_step||'Not recorded'}\n`+
     `- **Blockers:** ${(s.current.blockers||[]).join('; ')||'None'}\n`+
     `- **Technically complete but not accepted:** ${pending}\n\n`+
-    collaboration+`## Tasks\n${group('tasks')}\n\n## Features\n${group('features')}\n\n## Business flows\n${group('flows')}\n\n## Releases\n${group('releases')}\n\n`+
+    collaboration+`## Owner feedback\n${s.delivery?.owner_feedback?.length? s.delivery.owner_feedback.slice(-5).map(f=>'- '+f.scope+' '+f.target+': '+f.decision+' — '+f.at).join('\n'):'- Chưa có phản hồi được xác minh'}\n\n## Technical reviews\n${s.delivery?.technical_reviews?.length?s.delivery.technical_reviews.slice(-5).map(r=>'- '+r.task_id+': '+r.status+' (PR #'+r.pr_number+')').join('\n'):'- Chưa có review kỹ thuật được xác minh'}\n\n`+`## Tasks\n${group('tasks')}\n\n## Features\n${group('features')}\n\n## Business flows\n${group('flows')}\n\n## Releases\n${group('releases')}\n\n`+
     `**Reminder:** Issue closed ≠ verified integration or accepted feature. Evidence is a recorded claim until its external source is independently checked.\n`;
 }
 export function planIssueSync(state) {

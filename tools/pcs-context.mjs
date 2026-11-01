@@ -13,19 +13,23 @@ export function contextPacket(doc,{taskId,role='lead',limit=6}={}){
   if(!Number.isSafeInteger(Number(limit))||Number(limit)<1||Number(limit)>12)throw Error('INVALID_LIMIT');
   const s=doc.state, id=taskId??s.current?.active_task, selected=id?s.tasks.find(x=>x.id===id):null;
   if(id&&!selected)throw Error('TASK_NOT_FOUND');
-  const risk=selected?.risk??'UNCLASSIFIED';
+  const inputRisk=String(selected?.risk??'UNKNOWN').toUpperCase();
+  const risk=['LOW','NORMAL','HIGH','CRITICAL'].includes(inputRisk)?inputRisk:'UNKNOWN';
+  const cls=selected?.classification;
+  const classification=['PUBLIC','INTERNAL','CONFIDENTIAL','RESTRICTED'].includes(cls)?cls:'UNCLASSIFIED';
+  const deps=(selected?.dependencies??[]).map(x=>typeof x==='string'&&/^[A-Za-z][A-Za-z0-9._-]{0,79}$/.test(x)?x:'REDACTED');
   const flags=SENSITIVE.filter(k=>selected?.[k]===true);
-  const high=!!selected&&(!['LOW','NORMAL'].includes(String(risk).toUpperCase())||
-    !['PUBLIC','INTERNAL',undefined].includes(selected.classification)||flags.length>0);
+  const high=!!selected&&(!['LOW','NORMAL'].includes(risk)||
+    !['PUBLIC','INTERNAL',undefined].includes(cls)||flags.length>0);
   const preview=s.tasks.filter(OPEN).sort((a,b)=>Number(b.id===id)-Number(a.id===id)).slice(0,Number(limit))
     .map(x=>({id:x.id,status:x.status}));
   return {
     schema:'pcs.context-packet.v1',revision:doc.revision,project:s.slug,role,
     active_task:s.current?.active_task??null,task:selected?{
-      id:selected.id,status:selected.status,risk:String(risk).toUpperCase(),
-      classification:selected.classification??'UNCLASSIFIED',
-      dependencies:(selected.dependencies??[]).slice(0,20),
-      dependencies_remaining:Math.max(0,(selected.dependencies??[]).length-20),
+      id:selected.id,status:selected.status,risk,
+      classification,
+      dependencies:deps.slice(0,20),
+      dependencies_remaining:Math.max(0,deps.length-20),
       sensitive_flags:flags,owner_review_required:high
     }:null,
     backlog:{open:s.tasks.filter(OPEN).length,shown:preview,remaining:Math.max(0,s.tasks.filter(OPEN).length-preview.length)},

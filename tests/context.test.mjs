@@ -26,3 +26,12 @@ test('unknown risk and sensitive operation require owner review, even when conte
   assert.throws(()=>contextPacket(s,{limit:100}),/INVALID_LIMIT/);
   assert.throws(()=>contextPacket(s,{role:'admin'}),/INVALID_ROLE/);
 });
+
+test('unknown free-text risk metadata is normalized instead of echoed',()=>{
+ const s=makeSimpleState('sample-project','Sample');
+ s.state.tasks=[{id:'T1',status:'PLANNED',risk:'Confidential description 123'}];
+ const p=contextPacket(s,{taskId:'T1'});
+ assert.equal(p.task.risk,'UNKNOWN');
+ assert.equal(p.task.owner_review_required,true);
+ assert.ok(!JSON.stringify(p).includes('Confidential description'));
+});

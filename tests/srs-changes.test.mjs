@@ -55,3 +55,9 @@ test('summary is bounded for many independent requirements',()=>{
  assert.equal(summary(m,{max_items:20}).items.length,14);
  assert.throws(()=>summary(m,{max_items:100}),/INVALID_MAX_ITEMS/);
 });
+
+test('an existing unscoped v1 history requires explicit reconciliation before scoped writes',()=>{
+ const old=appendEvent(HEADER,proposal('CR-LEGACY','12','10','BASELINE'));
+ assert.equal(summary(old,{item_key:'FEAT-2'}).total_items,1);
+ assert.throws(()=>proposeFromActive(old,doc,{id:'CR-NEW',requirement_key:'password-length',before:'10',after:'8',reason:'Owner'}),/LEGACY_SCOPE_REVIEW_REQUIRED/);
+});

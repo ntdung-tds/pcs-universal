@@ -8,7 +8,7 @@ User command: **"Tiếp tục dự án theo PCS, sử dụng trạng thái mới
 
 ## Optional Skill
 
-If the AI host supports Skills, the **single optional** `adapters/chatgpt/SKILL.md` provides a short PCS activation guide. It is not automatically installed merely because this public repository exists; `START_HERE.md` works unchanged without a Skill. Do not create separate Skills for requirements, checklists or handoff.
+If the AI host supports Skills, the **single optional** `.agents/skills/pcs-universal/SKILL.md` provides a short PCS activation guide. It is discoverable only when the toolkit itself is an eligible workspace or the Skill is installed in a supported Skill location. It is not automatically installed into another project merely because this public repository exists; `START_HERE.md` works unchanged without a Skill. Do not create separate Skills for requirements, checklists or handoff.
 
 ## Start or resume
 1. Identify the **project repository** and current task. For an existing project, first read `pcs/MOMENT.md`, check its revision against the canonical `pcs/STATE.json` and HEAD, then inspect only the selected task, relevant PR/Issues, requirements and code. Do not paste the full state into the context by default. Do not reload unchanged PCS handbook/code in each chat. For a new project, read `docs/SIMPLE_MODE.md` and use `templates/simple/STATE.example.json` only to initialize a single `pcs3.simple.v1` state in a **private** project repo by default.

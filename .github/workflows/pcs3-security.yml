@@ -19,3 +19,5 @@ jobs:
         run: node tools/pcs-security-audit.mjs --root=.
       - name: Test PCS security and core
         run: node --test tests/*.test.mjs
+      - name: Verify distribution manifest
+        run: python3 VERIFY_PACKAGE.py

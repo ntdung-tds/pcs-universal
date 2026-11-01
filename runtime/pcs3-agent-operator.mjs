@@ -7,6 +7,7 @@ import {resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {GitHubGovernanceSource,initCollaboration,registerProposal,authorizeDecision,applyDecision} from './pcs3-collaboration.mjs';
 import {renderMoment,validateSimple} from './pcs3-simple.mjs';
+import {authorizeLeanClaim,applyLeanClaim} from './pcs3-lean.mjs';
 import {GitHubDeliverySource,applyTechnicalAcceptance,applyOwnerFeedback,recommendNextTasks} from './pcs3-delivery.mjs';
 import {assert,sha256,stable,now} from './pcs3-core.mjs';
 
@@ -74,6 +75,23 @@ export class AgentGovernanceOperator extends GitHubGovernanceSource {
     doc.revision++;doc.updated_at=now();
     return this.commitSnapshot(prior,doc,{actor:proposal.github_login,reason:`join request ${proposal.id}`});
   }
+  /** The caller MUST be verified by GitHub's /user API in this live session. */
+  async selfClaim({expectedRevision,taskId,agentId}){
+    const prior=await this.loadSnapshot();
+    assert(prior.doc.revision===expectedRevision,'CONFLICT: reload state');
+    const response=await this.fetcher('https://api.github.com/user',{
+      headers:{Authorization:`Bearer ${this.token}`,
+        Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}
+    });
+    assert(response.status===200,'AGENT_IDENTITY_BLOCKED: independent GitHub caller unavailable');
+    const caller=await response.json();
+    const doc=structuredClone(prior.doc);
+    const proof=authorizeLeanClaim(doc.state,{repoMetadata:prior.meta,caller,taskId,agentId});
+    applyLeanClaim(doc.state,proof);
+    doc.revision++;doc.updated_at=now();
+    return this.commitSnapshot(prior,doc,{actor:proof.actor_login,
+      reason:'lean self-claim '+taskId+' by '+agentId});
+  }
   async technicalReview({expectedRevision,taskId,agentId,prNumber}){
     const prior=await this.loadSnapshot();assert(prior.doc.revision===expectedRevision,'CONFLICT: reload state');
     const doc=structuredClone(prior.doc);
@@ -117,8 +135,9 @@ if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
     if(cmd==='bootstrap')return console.log(await op.bootstrap({expectedRevision:Number(opts.expect),maxAgents:opts.max?Number(opts.max):10}));
     if(cmd==='register')return console.log(await op.register({expectedRevision:Number(opts.expect),proposal:JSON.parse(await readFile(opts.proposal,'utf8'))}));
     if(cmd==='decide')return console.log(await op.decide({expectedRevision:Number(opts.expect),issueNumber:Number(opts.issue),commentId:Number(opts.comment),action:opts.action,target:opts.target}));
+    if(cmd==='self-claim')return console.log(await op.selfClaim({expectedRevision:Number(opts.expect),taskId:opts.task,agentId:opts.agent}));
     if(cmd==='technical-review')return console.log(await op.technicalReview({expectedRevision:Number(opts.expect),taskId:opts.task,agentId:opts.agent,prNumber:Number(opts.pr)}));
     if(cmd==='owner-feedback')return console.log(await op.ownerReview({expectedRevision:Number(opts.expect),issueNumber:Number(opts.issue),commentId:Number(opts.comment),scope:opts.scope,target:opts.target,reviewedSha:opts.sha}));
-    throw Error('Usage: status | bootstrap --expect=N | register --expect=N --proposal=... | decide --expect=N --issue=N --comment=N --action=approve|reject|revoke|assign|designate-lead|clear-lead --target=ID | technical-review --expect=N --task=T1 --agent=AGENT02 --pr=N | owner-feedback --expect=N --issue=N --comment=N --scope=feature|flow|release --target=ID --sha=40HEX');
+    throw Error('Usage: status | bootstrap --expect=N | register --expect=N --proposal=... | decide --expect=N --issue=N --comment=N --action=approve|reject|revoke|assign|designate-lead|clear-lead --target=ID | self-claim --expect=N --task=T1 --agent=AGENT02 | technical-review --expect=N --task=T1 --agent=AGENT02 --pr=N | owner-feedback --expect=N --issue=N --comment=N --scope=feature|flow|release --target=ID --sha=40HEX');
   })().catch(e=>{console.error('PCS AGENT GOVERNANCE:',e.message);process.exitCode=1;});
 }

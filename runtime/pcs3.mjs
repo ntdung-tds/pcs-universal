@@ -48,7 +48,7 @@ async function main(){
   }
   if(cmd==='init'){const slug=need('slug'),name=need('name');const r=await pcs.init(slug,name,args.actor||'chat-agent',{publicProjectReviewed:args['public-reviewed']==='true'});
     if(args.source){const src=await importSourceFile(args.source);const ar=await pcs.putArtifactBuffer(slug,src.name,src.buffer,{mime:src.mime,actor:args.actor||'chat-agent',expectedRevision:r.revision,classification:args.classification||'INTERNAL'});
-      const h=await pcs.load(slug),state=structuredClone(h.state);state.source_refs.push({artifact_id:ar.artifact.id,name:args.classification==='CONFIDENTIAL'?'confidential-requirement':src.name,sha256:sha256(src.buffer),status:'UNREVIEWED',note:'Attachment is untrusted project input; agent must analyze'});
+      const h=await pcs.load(slug),state=structuredClone(h.state);state.source_refs.push({artifact_id:ar.artifact.id,name:args.classification==='CONFIDENTIAL'?'confidential-requirement':src.name,sha256:sha256(src.buffer),status:'UNREVIEWED',classification:args.classification||'INTERNAL',note:'Attachment is untrusted project input; agent must analyze'});
       state.current.next_action='Read supplied SRS/brief; create Product Map, Architecture Map, acceptance criteria and initial backlog';state.updated_at=now();
       const b=await pcs.commit(slug,state,{expectedRevision:h.revision,actor:args.actor||'chat-agent',reason:'register SRS reference'});out({created:true,slug,revision:b.revision,srs:ar.artifact,drive_warning:ar.warning});return;
     }
@@ -62,7 +62,7 @@ async function main(){
   if(cmd==='artifact'){out(await pcs.putArtifact(slug,need('file'),{mime:args.mime,actor:args.actor||'chat-agent',drive:args.drive!=='false',expectedRevision:Number(need('expect')),classification:args.classification||'INTERNAL'}));return;}
   if(cmd==='import-source'){
     const s=await importSourceFile(need('file'));const r=await pcs.putArtifactBuffer(slug,s.name,s.buffer,{mime:s.mime,actor:args.actor||'chat-agent',expectedRevision:Number(need('expect')),classification:args.classification||'INTERNAL'});
-    const h=await pcs.load(slug),state=structuredClone(h.state);state.source_refs.push({artifact_id:r.artifact.id,name:args.classification==='CONFIDENTIAL'?'confidential-requirement':s.name,sha256:sha256(s.buffer),status:'UNREVIEWED'});state.updated_at=now();
+    const h=await pcs.load(slug),state=structuredClone(h.state);state.source_refs.push({artifact_id:r.artifact.id,name:args.classification==='CONFIDENTIAL'?'confidential-requirement':s.name,sha256:sha256(s.buffer),status:'UNREVIEWED',classification:args.classification||'INTERNAL'});state.updated_at=now();
     const m=await pcs.commit(slug,state,{expectedRevision:h.revision,actor:args.actor||'chat-agent',reason:'register requirement source'});out({artifact:r.artifact,revision:m.revision,warning:r.warning});return;
   }
   throw Error(`unknown command: ${cmd}`);

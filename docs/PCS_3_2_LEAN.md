@@ -46,7 +46,7 @@ node runtime/pcs3-agent-operator.mjs status
 node runtime/pcs3-agent-operator.mjs self-claim --expect=REVISION --task=T1 --agent=AGENT02
 ```
 
-Token chỉ lấy từ secret store; `PCS_GITHUB_REPO` trỏ vào **repository dự án private**. Operator kiểm tra `/user` bằng GitHub API, đọc `pcs/STATE.json` từ HEAD, kiểm tra scope và phân quyền, ghi `STATE`, `MOMENT`, snapshot **trong một commit**, cập nhật branch không force. Nếu branch protection chặn, kết quả `REVIEW_REQUIRED` là **PR chờ review, chưa phải tự nhận việc thành công**. Nếu connector không cho xác minh `/user` (ví dụ một số GitHub App installation), `AGENT_IDENTITY_BLOCKED`, không giả lập danh tính.
+Token chỉ lấy từ secret store; `PCS_GITHUB_REPO` trỏ vào **repository dự án do Owner chọn**; Private vẫn là lựa chọn an toàn cho dữ liệu nội bộ. Public chỉ dùng sau khi qua chính sách phân loại, xét duyệt và cấu hình riêng trong [STATE operations](STATE_OPERATIONS.md). Operator kiểm tra `/user` bằng GitHub API, đọc `pcs/STATE.json` từ HEAD, kiểm tra scope và phân quyền, ghi `STATE`, `MOMENT`, snapshot **trong một commit**, cập nhật branch không force. Nếu branch protection chặn, kết quả `REVIEW_REQUIRED` là **PR chờ review, chưa phải tự nhận việc thành công**. Nếu connector không cho xác minh `/user` (ví dụ một số GitHub App installation), `AGENT_IDENTITY_BLOCKED`, không giả lập danh tính.
 
 **Lead/AI không tự thức dậy trong các cửa sổ chat độc lập.** Muốn tự kích hoạt nhiều agent cần coordinator/triggers có quyền thực, triển khai và kiểm thử riêng. Các agent vẫn có thể phối hợp thủ công bằng cách mở phiên dùng cùng PCS State.
 

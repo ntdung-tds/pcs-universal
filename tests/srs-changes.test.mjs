@@ -61,3 +61,10 @@ test('an existing unscoped v1 history requires explicit reconciliation before sc
  assert.equal(summary(old,{item_key:'FEAT-2'}).total_items,1);
  assert.throws(()=>proposeFromActive(old,doc,{id:'CR-NEW',requirement_key:'password-length',before:'10',after:'8',reason:'Owner'}),/LEGACY_SCOPE_REVIEW_REQUIRED/);
 });
+
+test('invalid or timezone-less timestamps cannot enter the append-only ledger',()=>{
+ const bad=['2026-02-30T10:00:00Z','2026-11-01T10:00:00','2026-11-01','not-a-date'];
+ for(const at of bad)assert.throws(()=>appendEvent(HEADER,{...proposal('CR-DATE','old','new','BASELINE'),at}),/INVALID_PROVENANCE/);
+ const valid=appendEvent(HEADER,{...proposal('CR-OK','old','new','BASELINE'),at:'2026-11-01T17:00:00+07:00'});
+ assert.equal(parseLedger(valid).events.length,1);
+});

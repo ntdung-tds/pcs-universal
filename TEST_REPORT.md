@@ -2,7 +2,7 @@
 
 - Thêm `runtime/pcs3-lean.mjs` + `tests/lean-management.test.mjs` cho quyền tự nhận việc có điều kiện (risk, classification, state CAS, independent GitHub caller identity).
 - Các test cover: Solo/Collaborative/Controlled, stale/forged evidence, approved agent only, unknown/HIGH risk, Owner-only flags, dependency, double-claim, legacy opt-out.
-- **Kết quả PASS/FAIL: chỉ căn cứ GitHub Actions của Pull Request PCS 3.2; trước khi chạy: PENDING.** Không suy diễn E2E private sandbox từ module tests.
+- **CI đã kiểm chứng trên commit `7d08de5f7117cc8ff61fefa6f04546e65c5412d8`: 206/206 automated tests PASS, 0 FAIL; security audit PASS, SHA-256 manifest 96 files VERIFIED.** [GitHub Actions run 41278725229](https://github.com/ntdung-tds/pcs-universal/actions/runs/41278725229). Đây là bộ kiểm thử local/mock trên runner, **không phải** E2E private sandbox hay bảo đảm production.
 - **E2E còn mở:** private GitHub sandbox, 2 principals, branch protection, mock→live connector, cross-chat handoff; [tracking #9](https://github.com/ntdung-tds/pcs-universal/issues/9). Branch guard còn theo [#8](https://github.com/ntdung-tds/pcs-universal/issues/8).
 
 ---

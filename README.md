@@ -10,6 +10,9 @@
 
 **Mới trong PCS 3.1.1:** Lead Agent tự kiểm tra rulesets và bảo vệ nhánh mặc định; nếu chưa được bảo vệ, Lead lập phương án và chỉ áp dụng bằng quyền Admin riêng sau khi Owner xác nhận có chứng cứ. Không yêu cầu người dùng tự thiết lập từng tùy chọn. [Hướng dẫn Branch Governance](docs/BRANCH_GOVERNANCE.md).
 
+
+**Tiết kiệm context cho AI:** Khi bắt đầu chỉ đọc [`START_HERE.md`](START_HERE.md), sau đó đọc yêu cầu/trạng thái dự án và mở tài liệu PCS khác theo trigger. **Không đọc cả repository** — `archive/`, `runtime/`, `tests/`, báo cáo và handbook không phải tài liệu khởi động mặc định. Khi tiếp tục, ưu tiên `pcs/STATE.json`, `pcs/MOMENT.md` và thay đổi mới nhất của dự án.
+
 ## Bắt đầu trong 3 bước
 
 1. Vào **[PROMPT.md](PROMPT.md)** và sao chép đoạn **“Prompt chuẩn”**.

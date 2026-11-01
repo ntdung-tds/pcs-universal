@@ -21,7 +21,10 @@ const currentTime=()=>Date.now();
 function taskRequiresOwner(state,id){
   const task=state.tasks.find(t=>t.id===id);
   if(!task)return true;
-  if(task.security_sensitive!==undefined&&task.security_sensitive!==false)return true;
+  // Match PCS 3.2 self-claim gates: delegated Lead must not bypass Owner-only flags.
+  const ownerFlags=['security_sensitive','production','destructive','iam_change',
+    'credentials_change','external_spend','data_migration','requires_owner_approval'];
+  if(ownerFlags.some(flag=>task[flag]!==undefined&&task[flag]!==false))return true;
   if(typeof task.risk!=='string'||!['NORMAL','LOW'].includes(task.risk.trim().toUpperCase()))return true;
   if(task.classification!==undefined&&!['PUBLIC','INTERNAL'].includes(String(task.classification).trim().toUpperCase()))return true;
   return false;

@@ -96,3 +96,19 @@ test('CONFIDENTIAL key rotation preserves ciphertext format, decrypts under new 
  assert.throws(()=>rotateConfidentialArtifact(original.bytes,{slug:'safe-1',oldKeyBase64:oldKey,newKeyBase64:oldKey,newKeyId:'reuse'}),/different key/);
  assert.throws(()=>rotateConfidentialArtifact(original.bytes,{slug:'wrong',oldKeyBase64:oldKey,newKeyBase64:freshKey,newKeyId:'k2026b'}));
 });
+
+test('Advanced public project requires intentional reviewed state; internal uploads blocked before writing',async()=>{
+ const {pcs,files}=fixture(false);
+ pcs.allowPublic=true;
+ await assert.rejects(()=>pcs.init('open-project','Open'),/PUBLIC_POLICY_REQUIRED/);
+ const created=await pcs.init('open-project','Open','owner',{publicProjectReviewed:true});
+ assert.equal(created.revision,1);
+ const before=files.size;
+ await assert.rejects(()=>pcs.putArtifactBuffer('open-project','internal.txt',Buffer.from('test sample'),{expectedRevision:1,classification:'INTERNAL'}),/PUBLIC_DATA_BLOCKED/);
+ assert.equal(files.size,before,'no internal plaintext bytes uploaded');
+ const result=await pcs.putArtifactBuffer('open-project','public.txt',Buffer.from('safe public sample'),{expectedRevision:1,classification:'PUBLIC'});
+ assert.equal(result.artifact.classification,'PUBLIC');
+ const state=(await pcs.load('open-project')).state;
+ state.tasks.push({id:'T1',status:'PLANNED',classification:'INTERNAL'});
+ await assert.rejects(()=>pcs.commit('open-project',state,{expectedRevision:2}),/PUBLIC_DATA_BLOCKED/);
+});

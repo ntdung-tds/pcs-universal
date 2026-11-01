@@ -25,7 +25,21 @@ export function validateSimple(doc) {
 export function renderMoment(doc) {
   validateSimple(doc);
   const s=doc.state;
-  const group=(key)=>s[key].map(t=>`- ${t.id}: ${t.title||t.name||'Untitled'} — ${t.status}${t.github_issue?` — ${t.github_issue}`:''}`).join('\n')||'- Chưa có';
+  const group=(key)=>{
+    const items=s[key], current=s.current?.active_task;
+    const pending=items.filter(t=>!['ACCEPTED','CANCELLED'].includes(t.status));
+    const focus=pending.filter(t=>t.id===current);
+    const priority=pending.filter(t=>t.id!==current && ['IN_PROGRESS','BLOCKED','TECH_DONE','INTEGRATION_PENDING'].includes(t.status));
+    const other=pending.filter(t=>t.id!==current && !priority.includes(t));
+    const selected=[...focus,...priority,...other].slice(0,12);
+    const recentDone=items.filter(t=>t.status==='ACCEPTED').slice(-3);
+    const line=t=>`- ${t.id}: ${String(t.title||t.name||'Untitled').replace(/[\r\n]/g,' ').slice(0,120)} — ${t.status}${t.github_issue?` — ${t.github_issue}`:''}`;
+    const unshown=pending.length-selected.length;
+    return `- Total: ${items.length}; Open: ${pending.length}; Accepted: ${items.filter(t=>t.status==='ACCEPTED').length}; Cancelled: ${items.filter(t=>t.status==='CANCELLED').length}\n`+
+      ([...selected,...recentDone].map(line).join('\n')||'- Chưa có')+
+      (unshown?`\n- ... ${unshown} additional open items in pcs/STATE.json`:'')+
+      (items.filter(t=>t.status==='ACCEPTED').length>recentDone.length?`\n- ... earlier accepted items in pcs/STATE.json`:'');
+  };
   const pending=s.tasks.filter(t=>t.status==='TECH_DONE'||t.status==='INTEGRATION_PENDING').length;
   const c=s.collaboration;
   const collaboration=c?`## AI collaboration\n- **Lead:** ${c.lead?.agent_id??'Not owner-delegated'}\n- **Approved agents:** ${c.agents.filter(a=>a.status==='ACTIVE'||a.status==='IDLE').length}\n- **Pending requests:** ${c.proposals.filter(p=>p.status==='PENDING').length}\n\n`:'';

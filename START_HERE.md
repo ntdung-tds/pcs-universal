@@ -21,7 +21,7 @@ User command: **"Tiếp tục dự án theo PCS, sử dụng trạng thái mới
 | Agent joins, task assignment, self-claim or lead delegation | `docs/PCS_3_2_LEAN.md`, then `docs/AGENT_COLLABORATION.md` for authorization |
 | Lead technical review or Owner acceptance | `docs/PCS_3_1_UNIFIED.md` |
 | Configuring/changing branch governance | `docs/BRANCH_GOVERNANCE.md` (first do a read-only inspection); never assume Administration API |
-| SRS/outline item is revised, superseded or approved | `docs/REQUIREMENT_CHANGE_CONTROL.md` (log every change; final approved requirement governs work; **do not update SRS** until project completion and explicit Owner decision) |
+| SRS/outline item changes during an active Task | `docs/REQUIREMENT_CHANGE_CONTROL.md` — auto-associate Task/Feature, append delta to **project** `pcs/SRS_CHANGES.md`; do not require SRS section ID, do not update original SRS |
 | Selecting a bounded task context or preparing a cross-agent handoff | `docs/CONTEXT_ENGINE.md`; optional `tools/pcs-context.mjs` when Node is available |
 | State grows large, debugging revision differences or Public project classification | `docs/STATE_OPERATIONS.md` (only the relevant section) |
 | Sensitive data, production, credentials, deletion | `SECURITY.md`, `docs/DATA_CLASSIFICATION.md` and related relevant policy |

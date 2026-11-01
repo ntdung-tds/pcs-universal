@@ -1,56 +1,47 @@
-# PCS — Requirement Change History and Final-Effective Version (v1)
+# PCS SRS/đề cương changes — one-file active-task ledger (v2)
 
-**Goal:** A user may revise an SRS/outline item repeatedly. Preserve the immutable original, every proposal and decision, and **one clearly identifiable most recently approved effective version** per item. A later proposal never silently overwrites the last approved version.
+**Owner decision (binding):** During implementation, automatically capture **only deltas** from the original SRS/outline. Use the active PCS Task/Feature as context; **never require the Owner to know SRS section numbers or create CRs**. Keep the original SRS untouched. **Only after the entire project finishes** prepare a read-only comparison; SRS synchronization needs a separate explicit Owner decision and is optional.
 
-## Three layers
-1. **Baseline (immutable):** SRS/outline file and section, stable item ID, source SHA-256; keep original intact. If source is revised, pin the prior version in Git and explicitly adopt a new baseline with an auditable decision.
-2. **Change records (audit):** Each `CR-###` describes what changed, why, proposed final wording, impacted tasks/features/flows, tests, author, timestamps, GitHub Issue/PR/commit, decision and link to approval evidence. Store full detail in `docs/project/changes/CR-###.md` in the *project* repo with Git history; never overwrite previous CR files to hide superseded proposals.
-3. **Effective version (compact canonical index):** Optional `state.requirement_changes[]` in Multi-Agent `pcs/STATE.json`, the same key in Solo `pcs/STATE.json`, or `pcs/project.json.requirement_changes[]` in Desktop 2.1. This is part of the **existing canonical project state** and does not create a second state file. Store small references to change evidence, not SRS paragraphs or unbounded logs.
+## Project file and authority
 
-## Record contract
-```json
-{
-  "id": "CR-002",
-  "item_id": "FEAT-001",
-  "baseline_ref": "docs/SRS.md#3-2",
-  "baseline_sha256": "<64-hex-digest-of-original>",
-  "based_on": "CR-001",
-  "status": "APPROVED",
-  "final_ref": "docs/project/changes/CR-002.md",
-  "final_sha256": "<64-hex-digest-of-final-wording>",
-  "decision": {
-    "by": "verified-owner-login",
-    "ref": "https://github.com/org/project/issues/123#issuecomment-456"
-  }
-}
+New projects store the **sole new change history** in `pcs/SRS_CHANGES.md` inside the **project's repository**, not in the public PCS toolkit. Initialize it on the first real deviation:
+
+```markdown
+# PCS SRS Changes
+<!-- pcs-srs-changes:v1 -->
 ```
-Use `based_on: "BASELINE"` for the first approved change; later approved changes point to the *previous approved* CR of the same item. Proposal statuses: `PROPOSED`, `REJECTED`, `APPROVED`. A new `PROPOSED` based on the current approved version does **not** change it. The newest approved chain tip is effective; concurrent approved forks, altered baseline digests, missing predecessor, missing approval reference or missing pinned final digest are invalid.
 
-**Example:** SRS baseline 12 characters → CR-001 approved 10 → CR-002 approved 8 → CR-003 proposed 9. Effective requirement remains **CR-002 (8)** until a subsequent CR is actually approved. Revision order cannot replace an explicit approval.
+`pcs/STATE.json` (Universal/Solo) or native `pcs/project.json` + `pcs/tasks.json` (Desktop) continues to own **project/task progress**. It is **not** a second requirement-change log. Do not copy the complete ledger into STATE/Moment. The older optional `requirement_changes[]` in state is **legacy-compatible read-only** for existing projects; do not dual-write or silently migrate it. An existing project with a populated legacy ledger requires explicit reconciliation before adopting the new file; an empty legacy array is not a reason to keep writing there.
 
-## Workflow / checklist coupling
-- On request: create a CR and link to stable SRS section, affected backlog item and current effective CR. Stage proposal and impact analysis. Agent/Lead may propose; the Owner closes substantive scope/acceptance decisions.
-- On iteration: preserve CR-001/CR-002 history, record what supersedes what. Rejected and pending proposals remain auditable.
-- On decision: use a GitHub-verifiable Owner decision for changes that need Owner approval; require stricter authentication for production/IAM/destructive/security/financial scope. Never accept fabricated/ambiguous chat or a forged approval as external verification.
-- On approval: pin final wording and decision to a verifiable commit/review, then update the canonical change index with revision/HEAD check. Update affected task/feature acceptance criteria, QA/test cases, scope, schedule and checklist **in the same controlled workflow**. PR awaiting merge ≠ applied change.
-- On resume: load the active item's latest *approved* CR and outstanding proposals (counts/links) only; fetch full history on demand. Display current final version, pending proposals, change count, source baseline, outdated implementations/tests and exactly what the Owner has not yet approved.
-- On completion: `APPROVED CHANGE` ≠ `IMPLEMENTED` ≠ `TESTED` ≠ `OWNER ACCEPTED DELIVERABLE`. Each is a separate gate in the progress checklist.
+The SRS baseline is read-only. A CR records task/feature context, `srs_ref` if it can be grounded, before/after text, reason, timestamp, and decision provenance. Only changes are recorded — not the complete SRS or large documents.
 
-## Owner-controlled SRS synchronization — deferred until project completion
+## Human workflow (no forms)
 
-**Binding project policy:** Record requirement deviations and final approved wording in PCS throughout implementation; **never automatically edit, overwrite, regenerate or synchronize the original SRS/outline** because a CR was proposed, approved, implemented, tested, or a feature/release was accepted. The original SRS/outline remains a frozen reference baseline for the entire project. An approved CR changes the *effective implementation requirement in PCS*, not the source SRS document.
+1. Owner says naturally e.g. "Mật khẩu chỉ cần 8 ký tự" while a Task is under way. Agent obtains **current active Task** from PCS state, links to a **unique** related Feature when known and checks the last effective change for that context. It compares the relevant baseline/code/acceptance criterion. The Agent creates `CR-...` automatically. The user never supplies `3.2`, a CR number or a file name.
+2. If task links to multiple features, attach to the **Task** instead of guessing a Feature. If a SRS section cannot be proven, record `srs_ref: "UNMAPPED"` and resolve it later. If no valid active task exists, first identify the actual task; never invent context.
+3. Append a `PROPOSE` event for each distinct delta, then a `DECIDE` event when genuinely decided (APPROVED/REJECTED). Never erase earlier proposals or decisions. A new proposal does **not** replace a previously approved change. A decision must reference its provenance; an ordinary chat direction can be marked as an **unverified working decision**, not as authenticated production/IAM/security approval. Sensitive changes always need verified authorization.
+4. The **latest approved change in a non-forking sequence** is the implementation requirement. Contradictory approvals on the same previous version are blocked until reconciled. Project QA and product acceptance are separate from the change decision.
+5. On chat resume, load the current Task and only the short relevant change summary and any needed final delta. Fetch the whole history only for troubleshooting or end-of-project report. **Never automatically change the source SRS.**
+6. Once the project is complete, generate **FOR OWNER DECISION — NOT APPLIED** change comparison, grouped by SRS reference, or by task/feature when still UNMAPPED. Do not create an SRS update PR or sync unless the Owner separately requests it.
 
-- **During delivery:** Save every proposal/rejection/approval in the CR ledger with baseline section, old/new wording, reason, author, decision provenance and references. Keep only the last validly approved version effective per item. Continue code, tests, task acceptance and project work against this approved effective version. Do not create a separate SRS synchronization task or treat unmodified SRS as a blocker to normal completion.
-- **When the whole project is completed:** Prepare a **read-only consolidated change report** from the persisted ledger, grouped by original SRS/outline item. Show original wording/reference, the last approved final wording/reference, all superseded or rejected CR identifiers, evidence, and unresolved proposals. Mark report as **FOR OWNER DECISION — NOT APPLIED**. This is a proposal for review, not a rewritten SRS.
-- **Only after the Owner explicitly decides to synchronize:** The agent may prepare a separate controlled SRS/outline revision/PR scoped to the decision, preserving the original baseline and history, with review and verification. Do not infer permission from CR approval, generic "OK", feature acceptance, successful CI, project completion, or the resume command. If the Owner declines or defers, leave the source documents unchanged and retain the complete CR ledger/report for later.
+## Append-only event format (one Markdown file)
 
-**Independent gates:** `CR approved` = effective project requirement; `implementation/test/feature accepted` = delivery evidence; `SRS synchronized` = separate Owner-authorized documentation action. SRS synchronization is **optional**, is **not required** to complete the project, and must not happen prematurely.
+Entries are a short Markdown heading followed by one JSON event in a `pcs-change` fenced block. The event store is machine-validatable, readable in GitHub and searchable by ID, without giant nested JSON blobs. The first event is e.g.:
 
-## Safe usage
-Optional read-only CLI, when environment allows:
-```bash
-node tools/pcs-change-control.mjs --file=/project/pcs/STATE.json --item=FEAT-001
+```pcs-change
+{"kind":"PROPOSE","id":"CR-1","task_id":"TASK-5","feature_id":"FEAT-2","item_key":"FEAT-2","srs_ref":"UNMAPPED","mapping":"ACTIVE_CONTEXT","ambiguous_features":false,"based_on":"BASELINE","before":"Tối thiểu 12 ký tự","after":"Tối thiểu 8 ký tự","reason":"Owner thay đổi khi đang làm task","at":"2026-11-01T10:00:00Z"}
 ```
-For Desktop pass `--file=/project/pcs/project.json`. For Chat Solo use `python tools/pcs_requirements.py --file=/project/pcs/STATE.json --item=FEAT-001`.
 
-The resolver **only validates the structure and finds the unique approved chain tip**. Its `approval_externally_verified:false` is intentional: it cannot independently verify a GitHub decision, the SHA-256 of referenced files or the true Owner identity. Do not mark sensitive approvals verified without actual source readback. Legacy state with no records remains valid, and no retroactive approval is fabricated.
+A later decision is another event with the **same CR ID**: `{"kind":"DECIDE","id":"CR-1","decision":"APPROVED","actor":"owner","ref":"source-of-decision","at":"2026-11-01T10:01:00Z"}`. The decision record alone is not external verification. Do not fabricate refs.
+
+## Agent tools and token limits
+
+- Universal/Desktop (optional Node): `tools/pcs-srs-changes.mjs`
+- Chat Solo (optional Python): `tools/pcs_srs_changes.py`
+- Read active change only: `node tools/pcs-srs-changes.mjs --root=/project --item=FEAT-2` (Solo: `python tools/pcs_srs_changes.py --root=/project --item=FEAT-2`).
+- For recording, an Agent creates a small local JSON event request and calls `--record=/tmp/change.json --root=/project`; a `PROPOSE` request can omit task/feature/section because the helper derives them from current PCS state (Desktop also needs `--desktop=true`). An explicit `DECIDE` references the CR.
+- If the Agent works through a GitHub connector rather than CLI, it can append the same format, but must read current blob SHA/revision, validate before updating, use GitHub conditional updates/PR controls and re-read commit. **Do not assume the optional local lock serializes separate GitHub Agents.**
+- Tool output is bounded to ID, the selected item's effective delta, counts and a handful of references. Large local file parsing does not require pasting the entire ledger into the model context. On connectors that expose only whole files, consider a future selective index/splitting **after measurement**, not as the default.
+- Initial single-file strategy is deliberately simple. If concurrent writes or file size measurably cause problems, shard by item later behind the same interface. This is **not** automatic today.
+
+**Security / limits:** Enforce repository data classification and access, do not write restricted information in public repos. `verified_external_decision:false` is deliberate; external identity, link, SHA, SRS section mapping and real deployment/tests require independent checks. No new state schema, no changes to the locked Desktop distribution, no automatic migration or SRS sync.

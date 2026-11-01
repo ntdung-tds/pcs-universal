@@ -1,10 +1,10 @@
 # PCS — Universal AI Project System
 
-**Phiên bản công khai:** PCS 3.0.2 + Dynamic Agent Collaboration · **Dành cho:** ChatGPT, Claude, Gemini, Codex, Claude Code, Cursor và các AI có công cụ phù hợp.
+**Phiên bản công khai:** PCS 3.1.0 — Unified Contributor Workflow · **Dành cho:** ChatGPT, Claude, Gemini, Codex, Claude Code, Cursor và các AI có công cụ phù hợp.
 
 > **Cách sử dụng:** Mở **[PROMPT.md](PROMPT.md)** → sao chép prompt → dán vào ChatGPT/Claude/Gemini → đính kèm SRS, SOW, đề cương, hoặc chỉ mô tả ý tưởng. **Không cần tải hoặc cài PCS bằng tay cho mỗi dự án.**
 
-**[📋 XEM VÀ SAO CHÉP PROMPT](PROMPT.md)** · **[Cách dùng đơn giản](docs/SIMPLE_MODE.md)** · [Dành cho AI](START_HERE.md) · [Advanced Mode](docs/INSTALL_AND_ACTIVATE.md)
+**[📋 SAO CHÉP PROMPT](PROMPT.md)** · **[PCS Unified 3.1](docs/PCS_3_1_UNIFIED.md)** · [Dành cho AI](START_HERE.md) · [Advanced legacy](docs/INSTALL_AND_ACTIVATE.md)
 
 **Cập nhật bảo mật 01/11/2026:** Đã vá lỗi phê duyệt rủi ro, bằng chứng bị thay đổi và quyền Lead hết hạn; bổ sung PR chờ review khi nhánh chính được bảo vệ. [Chi tiết và giới hạn còn lại](docs/GOVERNANCE_HARDENING_20261101.md). Chưa chứng nhận E2E giữa các AI trên repository dự án thật.
 
@@ -22,15 +22,18 @@ AI tự khởi tạo repository dự án **private**, lưu `pcs/STATE.json` và 
 
 Những hạ tầng như GitHub Inbox, Gateway và chuỗi event nâng cao là **thành phần kỹ thuật tùy chọn** cho các tình huống cần mức giao dịch/kiểm toán cao; không tự kích hoạt hoặc thay đổi nguồn trạng thái chuẩn. Handbook mô tả triển khai hạ tầng này, không phải checklist bắt buộc. Các dự án cũ đã dùng canonical HEAD riêng cần migration có kiểm chứng trước khi thống nhất.
 
-## Một hay nhiều agent đều dùng một PCS
+## Một Lead Agent, nhiều Contributor và Owner nghiệm thu kết quả
 
 - Mặc định chỉ **một AI** làm việc; không cần tạo thêm agent.
 - Khi agent mới xin tham gia, có thể **tự đề xuất task**, nhận phân công từ Lead hoặc chỉ định từ **chủ dự án**.
 - **Bạn hoặc Lead đã được bạn ủy quyền đều được duyệt đề xuất thông thường.** Công việc nhạy cảm phải do bạn phê duyệt.
 - Các agent cùng dùng `pcs/STATE.json`, branch/PR riêng, lưu Moment; danh tính và phê duyệt phải được xác minh qua GitHub.
+- **Lead Agent nghiệm thu kỹ thuật:** review mã, xác minh PR/CI, chấp nhận task và chủ động đề xuất/giao việc tiếp theo trong phạm vi ủy quyền.
+- **Bạn nghiệm thu trải nghiệm sản phẩm:** xem bản chạy thật, tài liệu hoặc hình ảnh rồi nói “Đồng ý”, “Cần chỉnh sửa”, “Không đồng ý”. Không yêu cầu bạn kiểm tra code hoặc chạy test.
+- Phản hồi trong chat giúp Lead điều chỉnh nhưng không bị tự nhận là phê duyệt GitHub/production; các quyết định có yêu cầu kiểm toán phải được xác thực riêng.
 - Không tự kích hoạt workflow/hạ tầng mới chỉ vì có nhiều agent; nếu cần cấp quyền, AI yêu cầu đúng lúc.
 
-[**Xem hướng dẫn quản lý nhiều agent**](docs/AGENT_COLLABORATION.md) · [**Prompt cho agent mới**](PROMPT.md#prompt-agent-mới-xin-tham-gia-không-cố-định-nhiệm-vụ)
+[**Xem PCS Unified 3.1 — quyền và hai cấp nghiệm thu**](docs/PCS_3_1_UNIFIED.md) · [**Hướng dẫn quản lý nhiều agent**](docs/AGENT_COLLABORATION.md) · [**Prompt cho agent mới**](PROMPT.md#prompt-agent-mới-xin-tham-gia-không-cố-định-nhiệm-vụ)
 
 ## PCS giúp AI làm gì?
 
@@ -56,12 +59,12 @@ Repo công khai này **không tự cấp quyền** cho AI chạy mã, clone, t�
 | Nguyên tắc chung | [`adapters/UNIVERSAL_INSTRUCTIONS.md`](adapters/UNIVERSAL_INSTRUCTIONS.md) |
 | Kiến trúc/lưu trữ | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/STORAGE_POLICY.md`](docs/STORAGE_POLICY.md) |
 | Bảo mật | [`SECURITY.md`](SECURITY.md), [`docs/DATA_CLASSIFICATION.md`](docs/DATA_CLASSIFICATION.md) |
-| Cộng tác agent/duyệt | [`docs/AGENT_COLLABORATION.md`](docs/AGENT_COLLABORATION.md), [`runtime/pcs3-collaboration.mjs`](runtime/pcs3-collaboration.mjs) |
+| Cộng tác agent/duyệt | [`docs/PCS_3_1_UNIFIED.md`](docs/PCS_3_1_UNIFIED.md), [`docs/AGENT_COLLABORATION.md`](docs/AGENT_COLLABORATION.md), [`runtime/pcs3-delivery.mjs`](runtime/pcs3-delivery.mjs) |
 | Simple Mode và quản trị | [`docs/SIMPLE_MODE.md`](docs/SIMPLE_MODE.md), [`docs/SIMPLE_MODE_QUALITY.md`](docs/SIMPLE_MODE_QUALITY.md) |
 | CLI / code mẫu | [`runtime/`](runtime/) |
 | Kiểm thử, giới hạn | [`TEST_REPORT.md`](TEST_REPORT.md) |
 | Hướng dẫn advanced | [`docs/`](docs/) |
 
-**Trạng thái:** PCS 3.0.2 Simple Mode enhancement đã kiểm thử cục bộ theo `TEST_REPORT.md`, nhưng **chưa chứng nhận quy trình end-to-end trên mọi nền tảng AI hoặc tài khoản GitHub cụ thể**.
+**Trạng thái:** PCS 3.1.0 có bộ kiểm thử hồi quy tự động và kiểm tra toàn vẹn gói; xem kết quả GitHub Actions và `TEST_REPORT.md`, nhưng **chưa chứng nhận quy trình end-to-end trên mọi nền tảng AI hoặc tài khoản GitHub cụ thể**.
 
 **Quyền sử dụng lại:** Repo đang công khai để đọc và tham khảo. Chưa gắn giấy phép mã nguồn mở; chủ sở hữu cần quyết định giấy phép nếu muốn cho phép bên khác tái sử dụng/phân phối rộng rãi.

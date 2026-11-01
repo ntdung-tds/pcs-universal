@@ -1,5 +1,8 @@
 # PCS — Cộng tác AI linh hoạt (Dynamic Agent Collaboration)
 
+> **PCS 3.1.0:** Contributor được tự đề xuất, nhưng Lead được ủy quyền vẫn là đầu mối phân công. Lead nghiệm thu kỹ thuật task (PR, review, CI) và có thể tiếp tục giao việc; **Owner chỉ xem sản phẩm thực tế và quyết định đồng ý, yêu cầu sửa hoặc không đồng ý**. Đây là các quyền riêng biệt. [Xem quy trình thống nhất](PCS_3_1_UNIFIED.md).
+
+
 **Áp dụng cho từng repository dự án riêng tư.** Vẫn chỉ có **một nguồn trạng thái**: `pcs/STATE.json`. Không tạo riêng `AGENTS.json` hay kho canonical thứ hai. Mặc định **một AI đang làm việc**; thêm AI khi cần, không cố định chuyên môn hay nhiệm vụ.
 
 ## Bạn phải làm gì?

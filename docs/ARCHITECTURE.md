@@ -1,3 +1,14 @@
+## PCS Unified 3.1 — Contributor workflow & two distinct acceptance levels
+
+New projects launched from the public prompt use the **same** `pcs/STATE.json` regardless of whether one or many agents participate. `state.collaboration` is optional for additional agents; `state.delivery` is optional for technical and Owner feedback. The new reference implementation in [PCS Unified 3.1](PCS_3_1_UNIFIED.md) separates:
+
+- **GitHub Issue/PR/CI** as the source of task, code and review evidence;
+- **Lead Agent technical acceptance**, only after authenticated PR Lead review, merged PR and successful checked CI;
+- **Owner product feedback**, informal in-chat notes distinguished from authenticated Owner agreement on a specific reviewed commit;
+- **Lead task dispatch**, based on dependency-ready task recommendations plus GitHub authorization; agent sessions do not wake themselves automatically.
+
+This extends the new-project state model; the old Advanced canonical HEAD/event implementation is **legacy-compatible**, not transparently migrated. Never dual-write. GitHub token shared by Owner/AI is not an independent identity.
+
 # PCS 3.0 — Kiến trúc kỹ thuật và bất biến
 
 ## Thiết kế 5 lớp

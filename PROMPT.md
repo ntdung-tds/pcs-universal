@@ -8,7 +8,7 @@
 Hãy triển khai dự án này theo SRS, SOW, đề cương hoặc yêu cầu tôi cung cấp.
 
 Sử dụng bộ PCS tại: https://github.com/ntdung-tds/pcs-universal
-Trước tiên hãy đọc START_HERE.md và docs/SIMPLE_MODE.md. **Sử dụng một nguồn trạng thái PCS duy nhất trong repository dự án**: tự tạo/tiếp tục repository riêng của dự án, không yêu cầu tôi cài GitHub App, GitHub Inbox, Gateway, Node.js hoặc thao tác trong Handbook để bắt đầu. Các dịch vụ Inbox/Gateway chỉ là công cụ bổ trợ; không tự chuyển schema hay tạo kho trạng thái thứ hai.
+Trước tiên hãy đọc START_HERE.md và docs/PCS_3_1_UNIFIED.md (docs/SIMPLE_MODE.md chỉ là hướng dẫn khởi tạo legacy-compatible). **Sử dụng một nguồn trạng thái PCS duy nhất trong repository dự án**: tự tạo/tiếp tục repository riêng của dự án, không yêu cầu tôi cài GitHub App, GitHub Inbox, Gateway, Node.js hoặc thao tác trong Handbook để bắt đầu. Các dịch vụ Inbox/Gateway chỉ là công cụ bổ trợ; không tự chuyển schema hay tạo kho trạng thái thứ hai.
 
 Tự phân tích yêu cầu, nghiên cứu, lập kế hoạch, thiết kế kiến trúc tổng thể, phát triển, tích hợp, kiểm thử và hoàn thiện sản phẩm trong phạm vi công cụ và quyền được cấp. Quan tâm các liên kết giữa phân hệ, bảo mật, tính đúng đắn và khả năng bảo trì. Hãy tự lựa chọn giải pháp tốt; không bị giới hạn bởi một cách triển khai hoặc ngân sách token cố định.
 
@@ -18,6 +18,10 @@ Tự kiểm tra các kết nối cần thiết (GitHub, Drive, môi trường ch
 
 Mặc định một AI xử lý dự án. Nếu agent khác muốn tham gia, tuân thủ docs/AGENT_COLLABORATION.md: agent được tự đề xuất công việc hoặc xin tham gia chưa có task; chỉ bạn (Owner) hoặc Lead được bạn ủy quyền mới được duyệt. Quyết định nhạy cảm hoặc thiếu phân loại rủi ro luôn cần Owner, không tự duyệt, không cho hai agent cùng chiếm một task. Trước khi ghi quyết định, xác minh lại phiên quyền Lead, bản chụp trạng thái và comment GitHub; nếu kết quả là REVIEW_REQUIRED thì đó chỉ là PR chờ review, chưa phải đã duyệt hay đã cấp quyền. Phân công/đề xuất đều phải lưu ở cùng pcs/STATE.json với GitHub evidence xác thực, kiểm soát revision và hạn chế quyền.
 
+Một dự án chỉ có một Lead Agent được Owner ủy quyền, nhưng có thể có nhiều contributor. Contributor được tự đề xuất task mà không tự chiếm quyền; Lead tự duyệt và giao task thông thường trong phạm vi được ủy quyền. Sau khi contributor hoàn thành, Lead phải review PR, xác minh test/CI và tích hợp theo GitHub rulesets trước khi ghi nghiệm thu kỹ thuật; không tự review chính mình. Lead chủ động giao task tiếp theo dựa trên phụ thuộc và agent rảnh.
+
+Chủ dự án là người đánh giá kết quả sản phẩm, không phải tester kỹ thuật: hãy trình bày URL demo/ảnh/tài liệu, phần đã làm, phần chưa xác minh và hỏi ngắn gọn họ có đồng ý hoặc muốn chỉnh sửa. Phản hồi 'ổn rồi', 'cần sửa', 'không đồng ý' trong chat giúp định hướng tiếp nhưng không được khai gian là GitHub Owner VERIFIED hoặc đã duyệt production. Nếu quy trình bắt buộc xác minh, dùng GitHub Issue/comment của Owner theo docs/PCS_3_1_UNIFIED.md và kiểm tra commit hiện hành.
+
 Tự quản lý trạng thái và điểm tiếp tục; sau mỗi chặng quan trọng, thông báo ngắn gọn phần đã làm, phần đã kiểm chứng, phần còn thiếu và bước tiếp theo. Không đánh dấu chức năng hoàn tất nếu các phụ thuộc liên quan hoặc kiểm thử bắt buộc chưa đạt.
 
 Bắt đầu ngay từ những gì đang có.
@@ -26,7 +30,7 @@ Bắt đầu ngay từ những gì đang có.
 ## Prompt rất ngắn (khi AI đã biết PCS)
 
 ```text
-Hãy triển khai dự án này theo PCS tại https://github.com/ntdung-tds/pcs-universal (đọc START_HERE.md và docs/AGENT_COLLABORATION.md khi cần nhiều agent). Chủ động thực hiện, kiểm thử, bảo mật, lưu kết quả và PCS Moment trên GitHub; dùng Google Drive nếu có. Chỉ hỏi tôi khi cần quyền hoặc quyết định quan trọng.
+Hãy triển khai dự án này theo PCS tại https://github.com/ntdung-tds/pcs-universal (đọc START_HERE.md và docs/PCS_3_1_UNIFIED.md; docs/AGENT_COLLABORATION.md khi cần nhiều agent). Chủ động thực hiện, kiểm thử, bảo mật, lưu kết quả và PCS Moment trên GitHub; dùng Google Drive nếu có. Chỉ hỏi tôi khi cần quyền hoặc quyết định quan trọng.
 ```
 
 ## Prompt tiếp tục dự án

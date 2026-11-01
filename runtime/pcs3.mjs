@@ -13,7 +13,7 @@ function system(){
   const github=new GitHubStore({repo,token,branch});
   let drive=null;
   if(process.env.PCS_DRIVE_ACCESS_TOKEN && process.env.PCS_DRIVE_FOLDER_ID){drive=new DriveStore({token:process.env.PCS_DRIVE_ACCESS_TOKEN,folderId:process.env.PCS_DRIVE_FOLDER_ID});}
-  return {github,drive,pcs:new PCS3({github,drive})};
+  return {github,drive,pcs:new PCS3({github,drive,allowPublic:process.env.PCS_ALLOW_PUBLIC_REPO==='true'})};
 }
 const help=`PCS 3.0 — GitHub authoritative, Google Drive optional
 
@@ -21,11 +21,12 @@ Required environment:
   PCS_GITHUB_REPO=OWNER/REPO
   PCS_GITHUB_TOKEN=<fine-grained secret, Contents:read/write>
   PCS_GITHUB_BRANCH=main (optional)
+  PCS_ALLOW_PUBLIC_REPO=true only after Owner approves publicly classified project
 Optional Drive: PCS_DRIVE_ACCESS_TOKEN, PCS_DRIVE_FOLDER_ID
 
 Usage:
   pcs3.mjs doctor
-  pcs3.mjs init --slug=my-project --name="My Project" [--source=brief.docx] [--classification=INTERNAL|CONFIDENTIAL]
+  pcs3.mjs init --slug=my-project --name="My Project" [--public-reviewed=true] [--source=brief.docx] [--classification=PUBLIC|INTERNAL|CONFIDENTIAL]
   pcs3.mjs resume --slug=my-project
   pcs3.mjs state --slug=my-project [--out=state.json]
   pcs3.mjs checkpoint --slug=my-project --state=state.json --expect=1 --reason=... [--actor=...]
@@ -43,9 +44,9 @@ async function main(){
   const {github,drive,pcs}=system();
   if(cmd==='doctor'){const h=await github.health();let d={status:drive?'CONFIGURED_NOT_TESTED':'NOT_CONFIGURED',fallback:'GITHUB'};
     if(drive){try{const r=await drive.fetcher(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(drive.folderId)}?fields=id,name,mimeType`,{headers:{Authorization:`Bearer ${drive.token}`}});if(!r.ok) throw Error('HTTP '+r.status);const x=await r.json();assert(x.mimeType==='application/vnd.google-apps.folder','Drive parent is not folder');d={status:'READABLE_WRITE_NOT_VERIFIED',folder_id:x.id,fallback:'GITHUB'};}catch(e){d={status:'UNAVAILABLE',reason:e.message,fallback:'GITHUB'};}}
-    out({github:{...h,branch:github.branch},drive:d,warning:h.private?null:'Public repository: do not store confidential SRS; configure a PRIVATE repository.'});return;
+    out({github:{...h,branch:github.branch},drive:d,warning:h.private?null:'Public repository: requires explicit PUBLIC policy/review; never upload internal or confidential data.'});return;
   }
-  if(cmd==='init'){const slug=need('slug'),name=need('name');const r=await pcs.init(slug,name,args.actor||'chat-agent');
+  if(cmd==='init'){const slug=need('slug'),name=need('name');const r=await pcs.init(slug,name,args.actor||'chat-agent',{publicProjectReviewed:args['public-reviewed']==='true'});
     if(args.source){const src=await importSourceFile(args.source);const ar=await pcs.putArtifactBuffer(slug,src.name,src.buffer,{mime:src.mime,actor:args.actor||'chat-agent',expectedRevision:r.revision,classification:args.classification||'INTERNAL'});
       const h=await pcs.load(slug),state=structuredClone(h.state);state.source_refs.push({artifact_id:ar.artifact.id,name:args.classification==='CONFIDENTIAL'?'confidential-requirement':src.name,sha256:sha256(src.buffer),status:'UNREVIEWED',note:'Attachment is untrusted project input; agent must analyze'});
       state.current.next_action='Read supplied SRS/brief; create Product Map, Architecture Map, acceptance criteria and initial backlog';state.updated_at=now();

@@ -1,3 +1,18 @@
+# PCS 3.1.1 — GitHub Branch Guard (2026-11-01)
+
+PCS 3.1.1 bổ sung quy trình để **Lead Agent tự kiểm tra và cấu hình bảo vệ nhánh mặc định**, giảm thao tác GitHub thủ công của Owner:
+
+- Read-only preflight: branch, HEAD, repo rulesets, effective rules và classic protection; fail-closed khi không nhìn được chính sách hiện có.
+- Kế hoạch SHA-256 và comment GitHub Owner xác thực, kiểm tra chính caller độc lập với Owner, từ chối kế hoạch cũ.
+- Sau phê duyệt, dùng quyền Administration:write tạm thời để tạo **một ruleset mới**; không sửa/xóa ruleset cũ, không bypass. Xác minh bằng GitHub readback trước khi báo APPLIED_VERIFIED.
+- Baseline: PR bắt buộc, cấm force-push và xóa nhánh. Không tự bật required CI/reviewer nếu chưa xác minh được context, bảo vệ khỏi tự khóa repo solo.
+- Test mock với tình huống thiếu quyền, giả mạo, dùng chung account, conflict/race, duplicate/existing rules, verification failure. Không phải E2E private repository thật.
+- GitHub Free private repository có hạn chế rulesets theo gói; AI phải xác minh điều kiện tài khoản thay vì tự đoán.
+
+**Không tự thay đổi branch protection của PCS public hoặc bất kỳ dự án production nào khi phát hành thư viện.** Xem docs/BRANCH_GOVERNANCE.md.
+
+---
+
 # PCS 3.1.0 — Unified Contributor Workflow & Owner-first Acceptance (2026-11-01)
 
 **Release scope:** One Lead Agent with delegated authority, dynamic contributors who can propose work, technical acceptance by Lead, and final product feedback by Project Owner without requiring them to test code.

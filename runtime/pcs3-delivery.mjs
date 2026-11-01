@@ -25,7 +25,7 @@ function verifyLead(c,login){
 }
 function ensure(state){
   if(!state.delivery)state.delivery={
-    schema:'pcs3.delivery.v1',technical_reviews:[],owner_feedback:[]
+    schema:'pcs3.delivery.v1',technical_reviews:[],owner_feedback:[],owner_notes:[]
   };
   validateDelivery(state);
   return state.delivery;
@@ -34,7 +34,8 @@ export function validateDelivery(state){
   const d=state.delivery;
   if(d===undefined)return true;
   assert(d&&d.schema==='pcs3.delivery.v1','invalid delivery schema');
-  assert(Array.isArray(d.technical_reviews)&&Array.isArray(d.owner_feedback),'invalid delivery arrays');
+  assert(Array.isArray(d.technical_reviews)&&Array.isArray(d.owner_feedback)
+    &&(d.owner_notes===undefined||Array.isArray(d.owner_notes)),'invalid delivery arrays');
   const tasks=new Set(state.tasks.map(t=>t.id)),seenPR=new Set(),seenComment=new Set();
   for(const r of d.technical_reviews){
     id(r.task_id);assert(tasks.has(r.task_id),'technical review task missing');
@@ -47,12 +48,21 @@ export function validateDelivery(state){
     assert(!seenPR.has(r.pr_number+':'+r.task_id),'duplicate task PR review');
     seenPR.add(r.pr_number+':'+r.task_id);
   }
+  for(const note of (d.owner_notes||[])){
+    assert(scopeTypes.has(note.scope)&&state[scopeCollection(note.scope)].some(x=>x.id===note.target),
+      'conversation note target missing');
+    assert(['AGREED','CHANGES_REQUESTED','NOT_AGREED'].includes(note.preference),
+      'invalid conversation feedback');
+    assert(note.verification==='UNVERIFIED_CHAT','chat note cannot masquerade as verified Owner acceptance');
+    assert(typeof note.summary==='string'&&note.summary.length<=1000,'invalid conversation note');
+  }
   for(const f of d.owner_feedback){
     assert(scopeTypes.has(f.scope),'invalid owner review scope');id(f.target);
     assert(state[scopeCollection(f.scope)].some(v=>v.id===f.target),'owner review item missing');
     assert(choices.has(f.command),'invalid owner feedback command');
     assert(f.decision===choices.get(f.command),'owner feedback decision mismatch');
     assert(commitId.test(f.reviewed_sha),'owner feedback commit invalid');
+    assert(f.actor_login===f.owner_login,'owner feedback actor is not verified Owner');
     assert(Number.isSafeInteger(f.issue_number)&&f.issue_number>0,'invalid owner review issue');
     assert(Number.isSafeInteger(f.comment_id)&&f.comment_id>0,'invalid owner review comment');
     assert(!seenComment.has(f.issue_number+':'+f.comment_id),'owner comment replay');
@@ -180,6 +190,23 @@ export function applyOwnerFeedback(state,evidence){
     if(!state.current.blockers.includes(note))state.current.blockers.push(note);
   }
   validateDelivery(state);return state;
+}
+/** Capture an owner-like comment from chat as a *reported preference only*.
+ * It can guide the next task, but never counts as verified Owner approval.
+ * It must not automatically trigger sensitive changes or a production release.
+ */
+export function noteConversationFeedback(state,{scope,target,preference,summary}){
+  assert(scopeTypes.has(scope)&&state[scopeCollection(scope)].some(x=>x.id===target),
+    'conversation note deliverable missing');
+  assert(['AGREED','CHANGES_REQUESTED','NOT_AGREED'].includes(preference),
+    'invalid preference');
+  assert(typeof summary==='string'&&summary.trim()&&summary.length<=1000,
+    'missing human-readable feedback');
+  const d=ensure(state);
+  if(!d.owner_notes)d.owner_notes=[];
+  d.owner_notes.push({scope,target,preference,summary,verification:'UNVERIFIED_CHAT',at:now()});
+  validateDelivery(state);
+  return state;
 }
 export function latestOwnerFeedback(state,scope,target){
   return [...(state.delivery?.owner_feedback||[])].reverse()

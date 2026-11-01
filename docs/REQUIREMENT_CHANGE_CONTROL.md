@@ -36,6 +36,16 @@ Use `based_on: "BASELINE"` for the first approved change; later approved changes
 - On resume: load the active item's latest *approved* CR and outstanding proposals (counts/links) only; fetch full history on demand. Display current final version, pending proposals, change count, source baseline, outdated implementations/tests and exactly what the Owner has not yet approved.
 - On completion: `APPROVED CHANGE` ≠ `IMPLEMENTED` ≠ `TESTED` ≠ `OWNER ACCEPTED DELIVERABLE`. Each is a separate gate in the progress checklist.
 
+## Owner-controlled SRS synchronization — deferred until project completion
+
+**Binding project policy:** Record requirement deviations and final approved wording in PCS throughout implementation; **never automatically edit, overwrite, regenerate or synchronize the original SRS/outline** because a CR was proposed, approved, implemented, tested, or a feature/release was accepted. The original SRS/outline remains a frozen reference baseline for the entire project. An approved CR changes the *effective implementation requirement in PCS*, not the source SRS document.
+
+- **During delivery:** Save every proposal/rejection/approval in the CR ledger with baseline section, old/new wording, reason, author, decision provenance and references. Keep only the last validly approved version effective per item. Continue code, tests, task acceptance and project work against this approved effective version. Do not create a separate SRS synchronization task or treat unmodified SRS as a blocker to normal completion.
+- **When the whole project is completed:** Prepare a **read-only consolidated change report** from the persisted ledger, grouped by original SRS/outline item. Show original wording/reference, the last approved final wording/reference, all superseded or rejected CR identifiers, evidence, and unresolved proposals. Mark report as **FOR OWNER DECISION — NOT APPLIED**. This is a proposal for review, not a rewritten SRS.
+- **Only after the Owner explicitly decides to synchronize:** The agent may prepare a separate controlled SRS/outline revision/PR scoped to the decision, preserving the original baseline and history, with review and verification. Do not infer permission from CR approval, generic "OK", feature acceptance, successful CI, project completion, or the resume command. If the Owner declines or defers, leave the source documents unchanged and retain the complete CR ledger/report for later.
+
+**Independent gates:** `CR approved` = effective project requirement; `implementation/test/feature accepted` = delivery evidence; `SRS synchronized` = separate Owner-authorized documentation action. SRS synchronization is **optional**, is **not required** to complete the project, and must not happen prematurely.
+
 ## Safe usage
 Optional read-only CLI, when environment allows:
 ```bash

@@ -13,6 +13,8 @@
 
 **Tiết kiệm context cho AI:** Khi bắt đầu chỉ đọc [`START_HERE.md`](START_HERE.md), sau đó đọc yêu cầu/trạng thái dự án và mở tài liệu PCS khác theo trigger. **Không đọc cả repository** — `archive/`, `runtime/`, `tests/`, báo cáo và handbook không phải tài liệu khởi động mặc định. Khi tiếp tục, ưu tiên `pcs/STATE.json`, `pcs/MOMENT.md` và thay đổi mới nhất của dự án.
 
+**Skill tùy chọn:** Đã có một [PCS Skill gọn](adapters/chatgpt/SKILL.md) cho các môi trường có hỗ trợ. Skill cần được ứng dụng AI cài/đăng ký nếu muốn tự nhận diện; repo GitHub không tự kích hoạt Skill trong ChatGPT. **Không cần Skill để sử dụng PCS** và không có Skill riêng cho SRS hay checklist.
+
 ## Bắt đầu trong 3 bước
 
 1. Vào **[PROMPT.md](PROMPT.md)** và sao chép đoạn **“Prompt chuẩn”**.

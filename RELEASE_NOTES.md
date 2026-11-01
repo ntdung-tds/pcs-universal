@@ -1,3 +1,10 @@
+# PCS Governance Hardening — 2026-11-01
+
+- Vá P0: chuẩn hóa/fail-closed rủi ro; bất biến bằng chứng phê duyệt theo toàn bộ state; chặn quyết định cũ sau khi Lead bị thu hồi/hết hạn.
+- Vá P1 một phần: kiểm tra epoch/delegation; khi nhánh chính chặn push 403, tạo PR `REVIEW_REQUIRED`, không giả `APPLIED`.
+- Bổ sung kiểm thử độc lập các tình huống từng khai thác và đường đi PR bảo vệ nhánh.
+- **Chưa nghiệm thu E2E:** tài khoản GitHub chung, rulesets thực tế trên repo dự án, giám sát agent join liên tục, migration schema và xác minh QA bên ngoài.
+
 # PCS 3.0.2 — Dynamic Agent Collaboration enhancement (2026-11-01)
 
 - One project repo, one canonical `pcs/STATE.json`; optional `state.collaboration` extends state without introducing second governance store.

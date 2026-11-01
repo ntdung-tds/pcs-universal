@@ -132,6 +132,7 @@ export function applyDecision(state,evidence){
   const seal=verifiedDecisionObjects.get(evidence);
   assert(seal&&seal.stateIdentity===state,'UNVERIFIED_DECISION: obtain evidence through GitHub identity verification for this state');
   assert(sha256(stable(evidence))===seal.digest,'TAMPERED_DECISION: evidence was modified after verification');
+  assert(!c.history.some(h=>h.issue===evidence.issue_number&&h.comment===evidence.comment_id),'approval comment already applied');
   assert(c.lead_epoch===seal.lead_epoch,'STALE_LEAD_EPOCH: reauthorize on current project state');
   assert(c.policy.owner_login===seal.owner_login,'STALE_OWNER_POLICY: reauthorize');
   if(evidence.authority==='DELEGATED_LEAD'){
@@ -145,7 +146,6 @@ export function applyDecision(state,evidence){
   assert(sha256(stable(state))===seal.stateDigest,'STALE_GOVERNANCE_STATE: proposal, scope or permissions changed; reauthorize');
   assert(evidence.authority==='OWNER'?evidence.actor_login===c.policy.owner_login:true,'OWNER_IDENTITY_MISMATCH');
   assert(['OWNER','DELEGATED_LEAD'].includes(evidence.authority),'untrusted decision provenance');
-  assert(!c.history.some(h=>h.issue===evidence.issue_number&&h.comment===evidence.comment_id),'approval comment already applied');
   assert(Number.isSafeInteger(evidence.comment_id)&&evidence.comment_id>0,'decision comment ID required');
   const p=c.proposals.find(x=>x.id===evidence.proposalId);
   if(['approve','reject','revoke','assign'].includes(evidence.action)){

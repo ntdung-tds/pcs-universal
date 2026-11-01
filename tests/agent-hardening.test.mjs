@@ -101,3 +101,17 @@ test('SEC-02: proposal task list cannot be altered after approval verification',
   s.collaboration.proposals[0].suggested_tasks=['T1'];
   assert.throws(()=>applyDecision(s,decision),/STALE_GOVERNANCE_STATE/);
 });
+
+test('PCS 3.2: delegated Lead also respects Owner-only operational flags',()=>{
+  for(const flag of ['production','destructive','iam_change','credentials_change',
+    'external_spend','data_migration','requires_owner_approval']){
+    const s=withLead();s.tasks[0][flag]=true;
+    register(s,'JOIN02','AGENT02','newuser',['T1'],'NORMAL',11);
+    assert.throws(()=>auth(s,'leaduser','/pcs approve JOIN02','approve','JOIN02',11),
+      /sensitive work requires owner/,flag);
+    // The Owner remains authorized to approve these tasks.
+    const proof=auth(s,'alice','/pcs approve JOIN02','approve','JOIN02',11);
+    applyDecision(s,proof);
+    assert.equal(s.collaboration.assignments[0].task_id,'T1');
+  }
+});

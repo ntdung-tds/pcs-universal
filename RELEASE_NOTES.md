@@ -1,3 +1,14 @@
+# PCS 3.2.0 — Lean Contributor Management (candidate, 2026-11-01)
+
+- Duyệt quyền tham gia một lần; agent đã APPROVED + IDLE có thể tự nhận task LOW/NORMAL, không trùng assignee và dependencies ACCEPTED khi policy opt-in.
+- Thêm `runtime/pcs3-lean.mjs`: phân mức kiểm soát theo risk, fail-closed Owner-only flags, bằng chứng claim có snapshot digest và kiểm tra danh tính GitHub caller.
+- Operator có lệnh `self-claim` dùng GitHub `/user` và checkpoint atomic; nhánh protected chuyển sang `REVIEW_REQUIRED` chứ không tự phê duyệt.
+- Giữ phân cấp Owner product review, Lead technical acceptance và CI; không thay đổi canonical schema.
+- Legacy state không tự bật self-claim; không thêm service tự khởi động agent; live E2E chưa chứng nhận.
+- Các bằng chứng test phải xem GitHub Actions Pull Request; không coi mô tả này là chứng nhận production.
+
+---
+
 # PCS 3.1.1 — GitHub Branch Guard (2026-11-01)
 
 PCS 3.1.1 bổ sung quy trình để **Lead Agent tự kiểm tra và cấu hình bảo vệ nhánh mặc định**, giảm thao tác GitHub thủ công của Owner:

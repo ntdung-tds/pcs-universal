@@ -2,7 +2,7 @@
 
 **Ngày phát hành:** 2026-11-01. **Phạm vi mặc định:** Một dự án riêng tư trên GitHub; một nguồn trạng thái `pcs/STATE.json`; một AI Lead được ủy quyền; contributor được tự đề xuất việc.
 
-## Trải nghiệm dành cho Project Owner
+## Bổ sung PCS 3.1.1: Lead tự thiết lập bảo vệ nhánh\n\nLead chủ động đọc cấu hình GitHub, giữ nguyên bảo vệ có sẵn, trình Owner đề xuất bảo vệ nhánh mặc định nếu cần. Chỉ áp dụng khi có công cụ Administration API và chứng cứ phê duyệt từ tài khoản Owner độc lập; nếu không, báo rõ rào cản. Không bắt Owner tự chỉnh từng rule. [Chi tiết](BRANCH_GOVERNANCE.md).\n\n## Trải nghiệm dành cho Project Owner
 
 Bạn chỉ cần xem kết quả (website chạy thực tế, ảnh chụp, tài liệu, bản demo, test/CI), rồi nói **“Ổn rồi”**, **“Chỉnh lại phần này”** hoặc **“Tôi chưa đồng ý”**. Bạn không phải review code hay chạy test. Lead tự quản lý kỹ thuật, tự giao task tiếp theo trong phạm vi đã được ủy quyền.
 

@@ -59,23 +59,32 @@ export function appendEvent(markdown,event){
  check(parseLedger(updated).events.length===before.events.length+1,'EVENT_NOT_APPENDED');
  return updated;
 }
-export function proposeFromActive(markdown,doc,{tasks,features,id,before,after,reason,at,source_ref}={}){
+export function proposeFromActive(markdown,doc,{tasks,features,id,before,after,reason,at,source_ref,requirement_key}={}){
  const c=activeContext(doc,{tasks,features});check(ID.test(id??''),'INVALID_CHANGE_ID');
- const e={kind:'PROPOSE',id,...c,based_on:parseLedger(markdown).tips.get(c.item_key)??'BASELINE',
+ // The agent infers a short stable criterion slug; the human never supplies an SRS section number.
+ // A Feature/Task is context, NOT a unique requirement. Never merge independent criteria.
+ check(typeof requirement_key==='string'&&/^[a-z][a-z0-9-]{1,39}$/.test(requirement_key),'REQUIREMENT_KEY_REQUIRED');
+ const item_key=c.item_key+'.'+requirement_key;
+ check(ID.test(item_key),'REQUIREMENT_SCOPE_TOO_LONG');
+ const ledger=parseLedger(markdown),prior=ledger.proposals.get(ledger.tips.get(item_key));
+ if(prior)check(before===prior.after,'DELTA_BASELINE_MISMATCH');
+ const e={kind:'PROPOSE',id,...c,item_key,requirement_key,based_on:ledger.tips.get(item_key)??'BASELINE',
   before,after,reason,at:at??new Date().toISOString()};
  if(source_ref!==undefined)e.source_ref=source_ref;
  return {event:e,markdown:appendEvent(markdown,e)};
 }
-export function summary(markdown,{item_key,limit=6}={}){
+export function summary(markdown,{item_key,task_id,feature_id,limit=6,max_items=8}={}){
  check(Number.isInteger(limit)&&limit>=1&&limit<=20,'INVALID_LIMIT');
- if(item_key!==undefined)check(ID.test(item_key),'INVALID_ITEM_KEY');
- const {proposals,decided,tips}=parseLedger(markdown);
- const keys=item_key?[item_key]:[...new Set([...proposals.values()].map(p=>p.item_key))];
- return {schema:'pcs.srs-changes.v1',items:keys.map(key=>{
+ check(Number.isInteger(max_items)&&max_items>=1&&max_items<=50,'INVALID_MAX_ITEMS');
+ for(const x of [item_key,task_id,feature_id])if(x!==undefined)check(ID.test(x),'INVALID_FILTER');
+ const {proposals,decided,tips}=parseLedger(markdown),all=[...proposals.values()];
+ const keys=item_key?[item_key]:[...new Set(all.filter(p=>(!task_id||p.task_id===task_id)&&(!feature_id||p.feature_id===feature_id)).map(p=>p.item_key))];
+ return {schema:'pcs.srs-changes.v1',total_items:keys.length,remaining_items:Math.max(0,keys.length-max_items),items:keys.slice(0,max_items).map(key=>{
   const records=[...proposals.values()].filter(p=>p.item_key===key),
    effective=tips.get(key)??null,final=effective?proposals.get(effective):null,
    pending=records.filter(p=>!decided.has(p.id));
   return {item_key:key,task_id:records.at(-1)?.task_id??null,
+   feature_id:records.at(-1)?.feature_id??null,requirement_key:records.at(-1)?.requirement_key??null,
    srs_ref:records.at(-1)?.srs_ref??'UNMAPPED',effective_change_id:effective,
    effective_delta:final?{before:final.before,after:final.after}:null,
    pending_count:pending.length,history_count:records.length,
@@ -106,7 +115,7 @@ async function main(){
    await writeFile(temp,next,{flag:'wx'});await rename(temp,file);
    process.stdout.write(JSON.stringify({recorded:event.id,kind:event.kind,sha256:sha(next)})+'\n');
   }finally{await lock.close();await rm(file+'.lock',{force:true});}
- }else process.stdout.write(JSON.stringify(summary(await read(),{item_key:a.item,limit:a.limit?Number(a.limit):6}),null,2)+'\n');
+ }else process.stdout.write(JSON.stringify(summary(await read(),{item_key:a.item,task_id:a.task,feature_id:a.feature,limit:a.limit?Number(a.limit):6,max_items:a['max-items']?Number(a['max-items']):8}),null,2)+'\n');
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url))
  main().catch(e=>{console.error(e.message);process.exitCode=1});

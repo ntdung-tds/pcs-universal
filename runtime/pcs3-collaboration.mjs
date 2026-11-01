@@ -134,7 +134,6 @@ export function applyDecision(state,evidence){
   assert(sha256(stable(evidence))===seal.digest,'TAMPERED_DECISION: evidence was modified after verification');
   assert(c.lead_epoch===seal.lead_epoch,'STALE_LEAD_EPOCH: reauthorize on current project state');
   assert(c.policy.owner_login===seal.owner_login,'STALE_OWNER_POLICY: reauthorize');
-  assert(sha256(stable(state))===seal.stateDigest,'STALE_GOVERNANCE_STATE: proposal, scope or permissions changed; reauthorize');
   if(evidence.authority==='DELEGATED_LEAD'){
     const l=c.lead,la=c.agents.find(a=>a.id===l?.agent_id);
     assert(!!l&&l.epoch===c.lead_epoch&&la?.github_login===evidence.actor_login
@@ -143,6 +142,7 @@ export function applyDecision(state,evidence){
       'STALE_LEAD_AUTHORITY: revoked, expired or changed lead; reauthorize');
     assert(c.policy.lead_can_approve_normal===true,'lead approval policy revoked');
   }
+  assert(sha256(stable(state))===seal.stateDigest,'STALE_GOVERNANCE_STATE: proposal, scope or permissions changed; reauthorize');
   assert(evidence.authority==='OWNER'?evidence.actor_login===c.policy.owner_login:true,'OWNER_IDENTITY_MISMATCH');
   assert(['OWNER','DELEGATED_LEAD'].includes(evidence.authority),'untrusted decision provenance');
   assert(!c.history.some(h=>h.issue===evidence.issue_number&&h.comment===evidence.comment_id),'approval comment already applied');

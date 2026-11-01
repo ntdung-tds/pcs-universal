@@ -59,28 +59,40 @@ export function appendEvent(markdown,event){
  check(parseLedger(updated).events.length===before.events.length+1,'EVENT_NOT_APPENDED');
  return updated;
 }
-export function proposeFromActive(markdown,doc,{tasks,features,id,before,after,reason,at,source_ref}={}){
+export function proposeFromActive(markdown,doc,{tasks,features,id,before,after,reason,at,source_ref,revision_of}={}){
  const c=activeContext(doc,{tasks,features});check(ID.test(id??''),'INVALID_CHANGE_ID');
- const e={kind:'PROPOSE',id,...c,based_on:parseLedger(markdown).tips.get(c.item_key)??'BASELINE',
+ const ledger=parseLedger(markdown),prior=revision_of===undefined?null:ledger.proposals.get(revision_of);
+ check(revision_of===undefined||prior,'UNKNOWN_REVISION_TARGET');
+ check(!prior||prior.task_id===c.task_id||(c.feature_id&&prior.feature_id===c.feature_id),'UNRELATED_REVISION_TARGET');
+ const item_key=prior?.item_key??id;
+ const e={kind:'PROPOSE',id,...c,item_key,based_on:ledger.tips.get(item_key)??'BASELINE',
   before,after,reason,at:at??new Date().toISOString()};
- if(source_ref!==undefined)e.source_ref=source_ref;
+ if(revision_of!==undefined)e.revision_of=revision_of;
+ if(source_ref!==undefined){check(good(source_ref,1024),'INVALID_SOURCE_REF');e.source_ref=source_ref;}
  return {event:e,markdown:appendEvent(markdown,e)};
 }
-export function summary(markdown,{item_key,limit=6}={}){
+export function summary(markdown,{item_key,limit=6,offset=0,max_items=10}={}){
  check(Number.isInteger(limit)&&limit>=1&&limit<=20,'INVALID_LIMIT');
+ check(Number.isInteger(offset)&&offset>=0,'INVALID_OFFSET');
+ check(Number.isInteger(max_items)&&max_items>=1&&max_items<=20,'INVALID_MAX_ITEMS');
  if(item_key!==undefined)check(ID.test(item_key),'INVALID_ITEM_KEY');
- const {proposals,decided,tips}=parseLedger(markdown);
- const keys=item_key?[item_key]:[...new Set([...proposals.values()].map(p=>p.item_key))];
- return {schema:'pcs.srs-changes.v1',items:keys.map(key=>{
-  const records=[...proposals.values()].filter(p=>p.item_key===key),
-   effective=tips.get(key)??null,final=effective?proposals.get(effective):null,
+ const {proposals,decided,tips}=parseLedger(markdown),grouped=new Map();
+ for(const p of proposals.values()){if(!grouped.has(p.item_key))grouped.set(p.item_key,[]);grouped.get(p.item_key).push(p);}
+ const keys=[...grouped.keys()].filter(key=>!item_key||key===item_key||
+  grouped.get(key).some(p=>p.task_id===item_key||p.feature_id===item_key));
+ const page=keys.slice(offset,offset+max_items);
+ const items=page.map(key=>{
+  const records=grouped.get(key),effective=tips.get(key)??null,final=effective?proposals.get(effective):null,
    pending=records.filter(p=>!decided.has(p.id));
   return {item_key:key,task_id:records.at(-1)?.task_id??null,
-   srs_ref:records.at(-1)?.srs_ref??'UNMAPPED',effective_change_id:effective,
-   effective_delta:final?{before:final.before,after:final.after}:null,
+   feature_id:records.at(-1)?.feature_id??null,srs_ref:records.at(-1)?.srs_ref??'UNMAPPED',
+   effective_change_id:effective,effective_delta:final?{before:final.before,after:final.after}:null,
    pending_count:pending.length,history_count:records.length,
    recent_change_ids:records.slice(-limit).map(p=>p.id),verified_external_decision:false};
- }),warning:'Recorded decisions require independent GitHub verification; never auto-update original SRS.'};
+ });
+ return {schema:'pcs.srs-changes.v1',items,total_items:keys.length,
+  returned_items:items.length,next_offset:offset+items.length<keys.length?offset+items.length:null,
+  warning:'Recorded decisions require independent GitHub verification; never auto-update original SRS.'};
 }
 async function main(){
  const a={};for(const arg of process.argv.slice(2)){const i=arg.indexOf('=');check(arg.startsWith('--')&&i>2,'INVALID_OPTION');a[arg.slice(2,i)]=arg.slice(i+1);}
@@ -106,7 +118,7 @@ async function main(){
    await writeFile(temp,next,{flag:'wx'});await rename(temp,file);
    process.stdout.write(JSON.stringify({recorded:event.id,kind:event.kind,sha256:sha(next)})+'\n');
   }finally{await lock.close();await rm(file+'.lock',{force:true});}
- }else process.stdout.write(JSON.stringify(summary(await read(),{item_key:a.item,limit:a.limit?Number(a.limit):6}),null,2)+'\n');
+ }else process.stdout.write(JSON.stringify(summary(await read(),{item_key:a.item,limit:a.limit?Number(a.limit):6,offset:a.offset?Number(a.offset):0,max_items:a['max-items']?Number(a['max-items']):10}),null,2)+'\n');
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url))
  main().catch(e=>{console.error(e.message);process.exitCode=1});

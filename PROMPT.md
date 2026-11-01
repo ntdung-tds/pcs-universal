@@ -7,7 +7,7 @@
 ```text
 Hãy triển khai hoặc tiếp tục dự án theo yêu cầu/SRS của tôi với PCS Multi-Agent tại https://github.com/ntdung-tds/pcs-universal.
 
-Đầu tiên chỉ đọc START_HERE.md của PCS; các tài liệu, mã runtime và lịch sử khác chỉ mở khi công việc thực sự cần. Không đọc toàn bộ PCS repository. Nếu dự án đã tồn tại, ưu tiên đọc pcs/STATE.json, pcs/MOMENT.md, revision, yêu cầu và phần mã nguồn liên quan trong repository RIÊNG của dự án. Với dự án mới, làm theo hướng dẫn khởi tạo được chỉ rõ trong START_HERE.md.
+Đầu tiên chỉ đọc START_HERE.md của PCS; các tài liệu, mã runtime và lịch sử khác chỉ mở khi công việc thực sự cần. Không đọc toàn bộ PCS repository. Nếu dự án đã tồn tại, ưu tiên đọc pcs/MOMENT.md trước, đối chiếu revision với pcs/STATE.json rồi chỉ truy vấn các phần trạng thái liên quan, yêu cầu và phần mã nguồn liên quan trong repository RIÊNG của dự án. Với dự án mới, làm theo hướng dẫn khởi tạo được chỉ rõ trong START_HERE.md.
 
 Tự phân tích, thiết kế, lập kế hoạch, phát triển, tích hợp và kiểm thử trong phạm vi công cụ/quyền thực. Lead điều phối contributor khi có tham gia, review kỹ thuật và giao việc thông thường trong phạm vi Owner đã ủy quyền; chỉ dùng cơ chế cộng tác/đề xuất/phê duyệt trong PCS khi có tình huống đó. Tôi là Owner, đánh giá feature/luồng/mốc/release qua kết quả và bằng chứng, không cần duyệt từng task thường.
 
@@ -25,7 +25,7 @@ Hãy triển khai dự án này theo PCS tại https://github.com/ntdung-tds/pcs
 ## Prompt tiếp tục dự án
 
 ```text
-Hãy tiếp tục dự án hiện tại theo PCS tại https://github.com/ntdung-tds/pcs-universal. Trước khi sửa, đọc repository dự án, `pcs/STATE.json`, revision và `pcs/MOMENT.md` mới nhất; kiểm tra thay đổi từ phiên/agent khác, tiếp tục chính xác phần đang dở, kiểm thử, rồi lưu trạng thái và bước tiếp theo.
+Hãy tiếp tục dự án hiện tại theo PCS tại https://github.com/ntdung-tds/pcs-universal. Trước khi sửa, đọc `pcs/MOMENT.md` mới nhất, đối chiếu revision/HEAD và truy vấn mục liên quan trong `pcs/STATE.json`; kiểm tra thay đổi từ phiên/agent khác, tiếp tục chính xác phần đang dở, kiểm thử, rồi lưu trạng thái và bước tiếp theo.
 ```
 
 **Lưu ý:** Repository PCS đã được công khai. Đây là nơi **đọc tiêu chuẩn**, không phải nơi lưu dữ liệu dự án. Kết nối GitHub tùy theo công cụ được cấp và chỉ yêu cầu bạn cấp quyền khi cần; nếu không ghi được, AI phải báo rõ `PERSISTENCE_BLOCKED`. Không tự nhận đã triển khai sản phẩm nếu chưa có bằng chứng thực.

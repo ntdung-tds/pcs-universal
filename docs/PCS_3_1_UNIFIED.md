@@ -1,4 +1,4 @@
-# PCS Unified 3.1.0 — Contributor Workflow & Owner Feedback
+# PCS Unified 3.1.1 — Contributor Workflow & Owner Feedback
 
 **Ngày phát hành:** 2026-11-01. **Phạm vi mặc định:** Một dự án riêng tư trên GitHub; một nguồn trạng thái `pcs/STATE.json`; một AI Lead được ủy quyền; contributor được tự đề xuất việc.
 

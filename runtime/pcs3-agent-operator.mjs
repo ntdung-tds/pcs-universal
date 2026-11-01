@@ -7,6 +7,7 @@ import {resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {GitHubGovernanceSource,initCollaboration,registerProposal,authorizeDecision,applyDecision} from './pcs3-collaboration.mjs';
 import {renderMoment,validateSimple} from './pcs3-simple.mjs';
+import {GitHubDeliverySource,applyTechnicalAcceptance,applyOwnerFeedback,recommendNextTasks} from './pcs3-delivery.mjs';
 import {assert,sha256,stable,now} from './pcs3-core.mjs';
 
 export class AgentGovernanceOperator extends GitHubGovernanceSource {
@@ -73,6 +74,26 @@ export class AgentGovernanceOperator extends GitHubGovernanceSource {
     doc.revision++;doc.updated_at=now();
     return this.commitSnapshot(prior,doc,{actor:proposal.github_login,reason:`join request ${proposal.id}`});
   }
+  async technicalReview({expectedRevision,taskId,agentId,prNumber}){
+    const prior=await this.loadSnapshot();assert(prior.doc.revision===expectedRevision,'CONFLICT: reload state');
+    const doc=structuredClone(prior.doc);
+    const source=new GitHubDeliverySource({repo:this.repo,token:this.token,fetcher:this.fetcher});
+    const proof=await source.technicalEvidence(doc.state,{taskId,agentId,prNumber});
+    applyTechnicalAcceptance(doc.state,proof);
+    doc.revision++;doc.updated_at=now();
+    const result=await this.commitSnapshot(prior,doc,{actor:proof.lead_agent_id,reason:'technical acceptance '+taskId+' PR #'+prNumber});
+    return {...result,recommended_next_tasks:result.status==='APPLIED'?recommendNextTasks(doc.state):[]};
+  }
+  async ownerReview({expectedRevision,issueNumber,commentId,scope,target,reviewedSha}){
+    const prior=await this.loadSnapshot();assert(prior.doc.revision===expectedRevision,'CONFLICT: reload state');
+    assert(prior.sha===reviewedSha,'STALE_REVIEWED_COMMIT: Owner viewed a different snapshot');
+    const doc=structuredClone(prior.doc);
+    const source=new GitHubDeliverySource({repo:this.repo,token:this.token,fetcher:this.fetcher});
+    const proof=await source.ownerEvidence(doc.state,{issueNumber,commentId,scope,target,reviewedSha,branch:this.branch});
+    applyOwnerFeedback(doc.state,proof);
+    doc.revision++;doc.updated_at=now();
+    return this.commitSnapshot(prior,doc,{actor:proof.actor_login,reason:'owner '+proof.decision+' '+scope+' '+target});
+  }
   async decide({expectedRevision,issueNumber,commentId,action,target}){
     const prior=await this.loadSnapshot();assert(prior.doc.revision===expectedRevision,'CONFLICT: reload state');
     const doc=structuredClone(prior.doc);
@@ -91,11 +112,13 @@ if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
     const op=new AgentGovernanceOperator({repo,token,branch:opts.branch??'main'});
     if(cmd==='status'){
       const data=await op.loadSnapshot();const c=data.doc.state.collaboration;
-      console.log(JSON.stringify({revision:data.doc.revision,lead:c?.lead??null,agents:c?.agents??[],proposals:c?.proposals??[]},null,2));return;
+      console.log(JSON.stringify({revision:data.doc.revision,lead:c?.lead??null,agents:c?.agents??[],proposals:c?.proposals??[],technical_reviews:data.doc.state.delivery?.technical_reviews??[],owner_feedback:data.doc.state.delivery?.owner_feedback??[],next_tasks:recommendNextTasks(data.doc.state)},null,2));return;
     }
     if(cmd==='bootstrap')return console.log(await op.bootstrap({expectedRevision:Number(opts.expect),maxAgents:opts.max?Number(opts.max):10}));
     if(cmd==='register')return console.log(await op.register({expectedRevision:Number(opts.expect),proposal:JSON.parse(await readFile(opts.proposal,'utf8'))}));
     if(cmd==='decide')return console.log(await op.decide({expectedRevision:Number(opts.expect),issueNumber:Number(opts.issue),commentId:Number(opts.comment),action:opts.action,target:opts.target}));
-    throw Error('Usage: status | bootstrap --expect=N | register --expect=N --proposal=... | decide --expect=N --issue=N --comment=N --action=approve|reject|revoke|assign|designate-lead|clear-lead --target=ID');
+    if(cmd==='technical-review')return console.log(await op.technicalReview({expectedRevision:Number(opts.expect),taskId:opts.task,agentId:opts.agent,prNumber:Number(opts.pr)}));
+    if(cmd==='owner-feedback')return console.log(await op.ownerReview({expectedRevision:Number(opts.expect),issueNumber:Number(opts.issue),commentId:Number(opts.comment),scope:opts.scope,target:opts.target,reviewedSha:opts.sha}));
+    throw Error('Usage: status | bootstrap --expect=N | register --expect=N --proposal=... | decide --expect=N --issue=N --comment=N --action=approve|reject|revoke|assign|designate-lead|clear-lead --target=ID | technical-review --expect=N --task=T1 --agent=AGENT02 --pr=N | owner-feedback --expect=N --issue=N --comment=N --scope=feature|flow|release --target=ID --sha=40HEX');
   })().catch(e=>{console.error('PCS AGENT GOVERNANCE:',e.message);process.exitCode=1;});
 }

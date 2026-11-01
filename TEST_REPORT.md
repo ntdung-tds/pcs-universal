@@ -1,3 +1,19 @@
+# PCS Unified 3.1.0 — Validation Report (2026-11-01)
+
+**Đối tượng kiểm thử:** Unified Contributor Workflow — Lead technical review, contributor task proposal/next-task recommendation, Owner product feedback (GitHub verified vs unverified chat), solo-project backward compatibility.
+
+- Bản vá tạo module `runtime/pcs3-delivery.mjs` và bổ sung hai bộ test độc lập `tests/delivery-workflow.test.mjs`, `tests/delivery-operator.test.mjs`.
+- Thử từ chối PR chưa merge, PR không đúng contributor, Lead tự review chính mình, Lead review không còn APPROVED, check-runs thiếu/không đồng bộ/FAIL, trạng thái/phiên quyền đã thay đổi, bằng chứng giả/copy, phản hồi Owner không đúng GitHub login, sai issue, sai target hoặc reviewed SHA.
+- Thử hợp lệ: Lead nghiệm thu task đã được PR+CI xác minh, giải phóng assignment và đề xuất task tiếp theo; Owner phản hồi agree/changes/disagree ở milestone/release và chỉ xem sản phẩm.
+- Thử trường hợp solo không có agent registry; chat note `UNVERIFIED_CHAT` không được tự biến thành phê duyệt Owner đã xác thực.
+- Operator test sử dụng **mô phỏng GitHub API** cho commit ba tệp `pcs/STATE.json`, `pcs/MOMENT.md`, `pcs/moments/*.json` và xác thực comment/review. Chưa phải kiểm chứng E2E trên GitHub repository dự án riêng với ChatGPT/Claude thật.
+
+**Release gate:** Chi tiết số bài test PASS, manifest SHA-256, CI push/PR/main được xác nhận trên GitHub Actions của bản phát hành. Không suy ra E2E từ mock.
+
+**Chưa hoàn thành:** Không có daemon đánh thức các chat agent; không tự cấp quyền GitHub/App; Owner và AI dùng cùng token không có danh tính tách biệt; chưa migration Advanced HEAD cũ; không xác thực mọi bằng chứng UI/QA bên ngoài; chưa chứng nhận production deployment.
+
+---
+
 # Agent Governance Hardening — Báo cáo kiểm thử bổ sung 2026-11-01
 
 **Mục tiêu:** kiểm chứng bản vá P0 theo audit độc lập, không coi test mock là nghiệm thu đa ứng dụng.

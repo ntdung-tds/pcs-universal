@@ -57,6 +57,7 @@
       },
       "changes": [],
       "quality_policy": "Risk-proportionate independent verification before acceptance"
-    }
+    },
+    "requirement_changes": []
   }
 }

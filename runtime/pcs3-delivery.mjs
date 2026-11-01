@@ -142,9 +142,10 @@ export function authorizeOwnerFeedback(state,{repoMetadata,issue,comment,scope,t
   assert(scopeTypes.has(scope),'invalid owner feedback scope');
   assert(state[scopeCollection(scope)].some(x=>x.id===id(target)),'reviewed deliverable missing');
   assert(repoMetadata?.owner?.type==='User','OWNER_IDENTITY_NOT_CONFIGURED_FOR_ORG');
-  assert(state.collaboration?.policy?.owner_login===repoMetadata.owner.login.toLowerCase(),
+  const ownerLogin=repoMetadata.owner.login.toLowerCase();
+  assert(!state.collaboration||state.collaboration.policy.owner_login===ownerLogin,
     'OWNER_IDENTITY_POLICY_MISMATCH');
-  assert(comment?.user?.login?.toLowerCase()===state.collaboration.policy.owner_login,
+  assert(comment?.user?.login?.toLowerCase()===ownerLogin,
     'OWNER_COMMENT_REQUIRED');
   assert(issue?.number>0&&!issue.pull_request
     &&issue.body?.includes('<!-- pcs-owner-review:'+scope+':'+target+' -->'),
@@ -162,11 +163,12 @@ export function authorizeOwnerFeedback(state,{repoMetadata,issue,comment,scope,t
   return seal(Object.freeze({type:'OWNER_FEEDBACK',scope,target,command:m[1].toLowerCase(),
     decision:choices.get(m[1].toLowerCase()),reviewed_sha:reviewedSha.toLowerCase(),
     issue_number:issue.number,comment_id:comment.id,
-    actor_login:comment.user.login.toLowerCase(),at:now()}),state);
+    actor_login:comment.user.login.toLowerCase(),owner_login:ownerLogin,at:now()}),state);
 }
 export function applyOwnerFeedback(state,evidence){
   check(evidence,state);
-  assert(evidence.type==='OWNER_FEEDBACK'&&evidence.actor_login===state.collaboration?.policy.owner_login,
+  assert(evidence.type==='OWNER_FEEDBACK'&&evidence.actor_login===evidence.owner_login
+    &&(!state.collaboration||state.collaboration.policy.owner_login===evidence.actor_login),
     'ONLY_VERIFIED_OWNER_MAY_ACCEPT_PRODUCT');
   const d=ensure(state);
   assert(!d.owner_feedback.some(f=>f.issue_number===evidence.issue_number

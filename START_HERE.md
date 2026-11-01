@@ -17,6 +17,7 @@ This repository is the **public PCS toolkit**, not a project state store. **Read
 | Agent joins, task assignment, self-claim or lead delegation | `docs/PCS_3_2_LEAN.md`, then `docs/AGENT_COLLABORATION.md` for authorization |
 | Lead technical review or Owner acceptance | `docs/PCS_3_1_UNIFIED.md` |
 | Configuring/changing branch governance | `docs/BRANCH_GOVERNANCE.md` (first do a read-only inspection); never assume Administration API |
+| State grows large, debugging revision differences or Public project classification | `docs/STATE_OPERATIONS.md` (only the relevant section) |
 | Sensitive data, production, credentials, deletion | `SECURITY.md`, `docs/DATA_CLASSIFICATION.md` and related relevant policy |
 | Advanced Inbox, Gateway or migration | `docs/GITHUB_INBOX_MODE.md`, `docs/ARCHITECTURE.md` and relevant migration guides |
 | Working on PCS runtime/CI itself | The specific `runtime/`, `tests/`, schemas, manifest and CI files affected |

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {randomBytes} from 'node:crypto';
-import {encodeArtifact,decodeConfidentialArtifact,findHighConfidenceSecrets} from '../runtime/pcs3-security.mjs';
+import {encodeArtifact,decodeConfidentialArtifact,rotateConfidentialArtifact,findHighConfidenceSecrets} from '../runtime/pcs3-security.mjs';
 import {PCS3,sha256,emptyState} from '../runtime/pcs3-core.mjs';
 import {applyPatches,processRequest} from '../runtime/pcs3-inbox.mjs';
 const key=randomBytes(32).toString('base64');
@@ -82,4 +82,33 @@ test('read-only GitHub doctor reports public repository as failure and missing c
  const result=await assessGitHubSecurity({repo:'org/public',token:'test',fetcher});
  assert.equal(result.overall,'FAIL_PUBLIC_REPO');assert.equal(result.checks.protected_branch.status,'NOT_VERIFIED');
  assert.equal(result.checks.secret_scanning_and_push_protection.status,'NOT_VERIFIED');
+});
+
+test('CONFIDENTIAL key rotation preserves ciphertext format, decrypts under new key only',()=>{
+ const oldKey=randomBytes(32).toString('base64'),freshKey=randomBytes(32).toString('base64');
+ const original=encodeArtifact({bytes:Buffer.from('classified example'),filename:'notes.txt',
+   classification:'CONFIDENTIAL',slug:'safe-1',keyBase64:oldKey,keyId:'k2026a'});
+ const rotated=rotateConfidentialArtifact(original.bytes,{slug:'safe-1',oldKeyBase64:oldKey,
+   newKeyBase64:freshKey,newKeyId:'k2026b'});
+ assert.equal(rotated.encryption.key_id,'k2026b');
+ assert.equal(decodeConfidentialArtifact(rotated.bytes,{slug:'safe-1',keyBase64:freshKey}).toString(),'classified example');
+ assert.throws(()=>decodeConfidentialArtifact(rotated.bytes,{slug:'safe-1',keyBase64:oldKey}));
+ assert.throws(()=>rotateConfidentialArtifact(original.bytes,{slug:'safe-1',oldKeyBase64:oldKey,newKeyBase64:oldKey,newKeyId:'reuse'}),/different key/);
+ assert.throws(()=>rotateConfidentialArtifact(original.bytes,{slug:'wrong',oldKeyBase64:oldKey,newKeyBase64:freshKey,newKeyId:'k2026b'}));
+});
+
+test('Advanced public project requires intentional reviewed state; internal uploads blocked before writing',async()=>{
+ const {pcs,files}=fixture(false);
+ pcs.allowPublic=true;
+ await assert.rejects(()=>pcs.init('open-project','Open'),/PUBLIC_POLICY_REQUIRED/);
+ const created=await pcs.init('open-project','Open','owner',{publicProjectReviewed:true});
+ assert.equal(created.revision,1);
+ const before=files.size;
+ await assert.rejects(()=>pcs.putArtifactBuffer('open-project','internal.txt',Buffer.from('test sample'),{expectedRevision:1,classification:'INTERNAL'}),/PUBLIC_DATA_BLOCKED/);
+ assert.equal(files.size,before,'no internal plaintext bytes uploaded');
+ const result=await pcs.putArtifactBuffer('open-project','public.txt',Buffer.from('safe public sample'),{expectedRevision:1,classification:'PUBLIC'});
+ assert.equal(result.artifact.classification,'PUBLIC');
+ const state=(await pcs.load('open-project')).state;
+ state.tasks.push({id:'T1',status:'PLANNED',classification:'INTERNAL'});
+ await assert.rejects(()=>pcs.commit('open-project',state,{expectedRevision:2}),/PUBLIC_DATA_BLOCKED/);
 });

@@ -2,7 +2,7 @@
 
 ## First run / access
 
-1. Create a **private** GitHub repository dedicated to PCS states (or choose an existing authorized private one); repo should have a real default branch.
+1. Choose a GitHub project repository with Owner-approved visibility (**Public or Private**). Private is safer for internal project data; Public requires an explicit PUBLIC data classification and reviewed project history. See [STATE_OPERATIONS](STATE_OPERATIONS.md).
 2. Connect GitHub to AI app through supported UI; Drive optionally. If using Node CLI, set environment variables in terminal/secret store; do not paste values into chat.
 3. Run `node runtime/pcs3.mjs doctor` and inspect branch, repo private and Drive status. Drive folder read is NOT a guarantee of write; test one small upload if permitted.
 4. New project: `node runtime/pcs3.mjs init --slug=example-1 --name='Example' --source=./SRS.docx`. The source file is stored; product map remains DRAFT until agent analyzes it.

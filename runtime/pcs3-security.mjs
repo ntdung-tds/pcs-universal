@@ -28,21 +28,56 @@ function keyFromEnv(keyBase64=process.env.PCS_ARTIFACT_KEY_B64){
   if(!keyBase64||typeof keyBase64!=='string'||! /^[A-Za-z0-9+/]{42}[AEIMQUYcgkosw048]=$/.test(keyBase64)) throw Error('SECURITY_BLOCKED: CONFIDENTIAL artifacts require PCS_ARTIFACT_KEY_B64 containing a fresh 32-byte key (base64)');
   const key=Buffer.from(keyBase64,'base64');if(key.length!==32)throw Error('SECURITY_BLOCKED: encryption key must be 32 bytes');return key;
 }
-export function encodeArtifact({bytes,filename,classification='INTERNAL',slug,keyBase64=process.env.PCS_ARTIFACT_KEY_B64}){
+export function encodeArtifact({bytes,filename,classification='INTERNAL',slug,keyBase64=process.env.PCS_ARTIFACT_KEY_B64,keyId=process.env.PCS_ARTIFACT_KEY_ID||'PCS_ARTIFACT_KEY_B64'}){
   if(!Buffer.isBuffer(bytes))throw Error('SECURITY_BLOCKED: bytes must be Buffer');
   if(!CLASSIFICATIONS.includes(classification))throw Error(`SECURITY_BLOCKED: unrecognized classification: ${classification}`);
   if(classification==='RESTRICTED')throw Error('SECURITY_BLOCKED: RESTRICTED data requires an approved data-processing agreement and separate authorized storage design; not uploaded to GitHub/Drive');
   const hits=findHighConfidenceSecrets(bytes,{filename});
   if(hits.length)throw Error(`SECURITY_BLOCKED: suspected credentials or key material (${hits.join(', ')}); do not commit to GitHub or Drive`);
   if(classification!=='CONFIDENTIAL')return {bytes,storedName:basename(filename),classification,encrypted:false};
+  if(typeof keyId!=='string'||! /^[a-zA-Z0-9._-]{1,64}$/.test(keyId))throw Error('SECURITY_BLOCKED: invalid public key identifier');
   const key=keyFromEnv(keyBase64),iv=randomBytes(12);const aad=Buffer.from(`pcs3|${slug}|CONFIDENTIAL`);
   const cipher=createCipheriv('aes-256-gcm',key,iv);cipher.setAAD(aad);
   const body=Buffer.concat([cipher.update(bytes),cipher.final()]);const tag=cipher.getAuthTag();
-  return {bytes:Buffer.concat([MAGIC,iv,tag,body]),storedName:'confidential-artifact.enc',classification,encrypted:true,encryption:{algorithm:'AES-256-GCM',format:'PCS3ENC1',key_id:'PCS_ARTIFACT_KEY_B64',aad_scope:'project-slug'}};
+  return {bytes:Buffer.concat([MAGIC,iv,tag,body]),storedName:'confidential-artifact.enc',classification,encrypted:true,encryption:{algorithm:'AES-256-GCM',format:'PCS3ENC1',key_id:keyId,aad_scope:'project-slug'}};
 }
 export function decodeConfidentialArtifact(envelope,{slug,keyBase64=process.env.PCS_ARTIFACT_KEY_B64}={}){
   if(!Buffer.isBuffer(envelope)||envelope.length<MAGIC.length+12+16||!envelope.subarray(0,MAGIC.length).equals(MAGIC))throw Error('SECURITY_BLOCKED: invalid encrypted PCS artifact envelope');
   const key=keyFromEnv(keyBase64),iv=envelope.subarray(8,20),tag=envelope.subarray(20,36),body=envelope.subarray(36);
   const decipher=createDecipheriv('aes-256-gcm',key,iv);decipher.setAAD(Buffer.from(`pcs3|${slug}|CONFIDENTIAL`));decipher.setAuthTag(tag);
   return Buffer.concat([decipher.update(body),decipher.final()]);
+}
+
+/** Gate public project STATE by explicit project classification, not repository visibility alone.
+ * A prompt or AI-authored flag is not authenticated Owner approval: provider identity and
+ * protected-branch review must be verified separately for sensitive decisions.
+ */
+export function assertPublicProjectSafe(state) {
+  if(state?.policy?.repository_visibility!=='PUBLIC' || state?.policy?.public_content_reviewed!==true
+      || state?.policy?.content_classification!=='PUBLIC')
+    throw Error('PUBLIC_POLICY_REQUIRED: explicit public project/content review required');
+  for(const key of ['source_refs','tasks','features','flows','releases','decisions','risks','approvals','artifacts']){
+    if(!Array.isArray(state[key]))throw Error('PUBLIC_STATE_INVALID: '+key);
+    for(const item of state[key]){
+      if(item?.classification!=='PUBLIC')
+        throw Error('PUBLIC_DATA_BLOCKED: '+key+' must be explicitly classified PUBLIC');
+    }
+  }
+  assertSafeState(state);
+  return true;
+}
+
+/** Explicit, offline re-encryption helper for an already-downloaded encrypted artifact.
+ * The caller must retain old key material until each old artifact is verified/re-encrypted.
+ * This routine does NOT update remote objects, manifests, permissions or backups.
+ */
+export function rotateConfidentialArtifact(envelope,{slug,oldKeyBase64,newKeyBase64,newKeyId}={}){
+  if(typeof slug!=='string'||!slug.trim())throw Error('SECURITY_BLOCKED: project slug required');
+  const oldKey=keyFromEnv(oldKeyBase64),freshKey=keyFromEnv(newKeyBase64);
+  if(oldKey.equals(freshKey))throw Error('SECURITY_BLOCKED: rotation requires a different key');
+  const plaintext=decodeConfidentialArtifact(envelope,{slug,keyBase64:oldKeyBase64});
+  try{
+    return encodeArtifact({bytes:plaintext,filename:'confidential-artifact.enc',classification:'CONFIDENTIAL',
+      slug,keyBase64:newKeyBase64,keyId:newKeyId});
+  }finally{plaintext.fill(0);}
 }

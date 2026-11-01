@@ -10,29 +10,31 @@ import {renderMoment,validateSimple} from './pcs3-simple.mjs';
 import {authorizeLeanClaim,applyLeanClaim} from './pcs3-lean.mjs';
 import {GitHubDeliverySource,applyTechnicalAcceptance,applyOwnerFeedback,recommendNextTasks} from './pcs3-delivery.mjs';
 import {assert,sha256,stable,now} from './pcs3-core.mjs';
+import {assertPublicProjectSafe} from './pcs3-security.mjs';
 
 export class AgentGovernanceOperator extends GitHubGovernanceSource {
-  constructor({repo,token,branch='main',fetcher=globalThis.fetch}){
+  constructor({repo,token,branch='main',allowPublic=false,fetcher=globalThis.fetch}){
     super({repo,token,fetcher});
-    assert(typeof branch==='string'&&branch.length<=150&&branch.split('/').every(part=>part.length>0&&part!=='.'&&part!=='..'&&/^[A-Za-z0-9._-]+$/.test(part)),'invalid branch');this.branch=branch;
+    assert(typeof branch==='string'&&branch.length<=150&&branch.split('/').every(part=>part.length>0&&part!=='.'&&part!=='..'&&/^[A-Za-z0-9._-]+$/.test(part)),'invalid branch');this.branch=branch;this.allowPublic=allowPublic===true;
   }
   async api(method,path,payload){
     const r=await this.fetcher(`https://api.github.com/repos/${this.repo}${path}`,{method,headers:{Authorization:`Bearer ${this.token}`,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'},body:JSON.stringify(payload)});
     assert(r.ok,`GITHUB_WRITE_BLOCKED_${r.status}: check branch protection and token permissions; nothing may be marked published`);return r.json();
   }
   async loadSnapshot(){
-    const meta=await this.get('');assert(meta.private===true,'project repository must be private for governance state');
+    const meta=await this.get('');assert(typeof meta.private==='boolean','REPOSITORY_VISIBILITY_UNKNOWN');
     const ref=await this.get(`/git/ref/heads/${encodeURIComponent(this.branch)}`);
     const commit=await this.get(`/git/commits/${ref.object.sha}`);
     const contents=await this.get(`/contents/pcs/STATE.json?ref=${encodeURIComponent(ref.object.sha)}`);
     assert(contents.encoding==='base64'&&typeof contents.content==='string','missing PCS state');
     const doc=JSON.parse(Buffer.from(contents.content.replace(/\s/g,''),'base64').toString('utf8'));
     validateSimple(doc);
+    if(!meta.private){assert(this.allowPublic,'PUBLIC_REPOSITORY_NOT_AUTHORIZED: set PCS_ALLOW_PUBLIC_REPO=true only after Owner review');assertPublicProjectSafe(doc.state);}
     return {doc,sha:ref.object.sha,tree:commit.tree.sha,meta};
   }
   async makeBlob(buffer){const b=await this.api('POST','/git/blobs',{content:Buffer.from(buffer).toString('base64'),encoding:'base64'});assert(b.sha,'blob creation failed');return b.sha;}
   async commitSnapshot(before,updated,{reason,actor}){
-    validateSimple(updated);assert(updated.revision===before.doc.revision+1,'revision must advance exactly one');
+    validateSimple(updated);if(before.meta.private===false)assertPublicProjectSafe(updated.state);assert(updated.revision===before.doc.revision+1,'revision must advance exactly one');
     const eventName=`MOM-${String(updated.revision).padStart(5,'0')}-${sha256(stable(updated)).slice(0,12)}.json`;
     const event={schema:'pcs3.simple-moment.v1',revision:updated.revision,previous_revision:before.doc.revision,previous_sha256:sha256(stable(before.doc)),state_sha256:sha256(stable(updated)),actor,reason,at:updated.updated_at,state:updated.state};
     const changes=[['pcs/STATE.json',JSON.stringify(updated,null,2)+'\n'],['pcs/MOMENT.md',renderMoment(updated)],['pcs/moments/'+eventName,JSON.stringify(event,null,2)+'\n']];
@@ -127,7 +129,7 @@ if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
   (async()=>{
     const repo=opts.repo??process.env.PCS_GITHUB_REPO,token=process.env.PCS_GITHUB_TOKEN??process.env.GITHUB_TOKEN;
     assert(repo&&token,'PCS_GITHUB_REPO + GitHub token with authorized scope are required');
-    const op=new AgentGovernanceOperator({repo,token,branch:opts.branch??'main'});
+    const op=new AgentGovernanceOperator({repo,token,branch:opts.branch??'main',allowPublic:process.env.PCS_ALLOW_PUBLIC_REPO==='true'});
     if(cmd==='status'){
       const data=await op.loadSnapshot();const c=data.doc.state.collaboration;
       console.log(JSON.stringify({revision:data.doc.revision,lead:c?.lead??null,agents:c?.agents??[],proposals:c?.proposals??[],technical_reviews:data.doc.state.delivery?.technical_reviews??[],owner_feedback:data.doc.state.delivery?.owner_feedback??[],next_tasks:recommendNextTasks(data.doc.state)},null,2));return;

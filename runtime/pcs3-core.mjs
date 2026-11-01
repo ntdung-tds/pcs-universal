@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { extname, basename } from 'node:path';
-import {assertSafeState, encodeArtifact} from './pcs3-security.mjs';
+import {assertSafeState, assertPublicProjectSafe, encodeArtifact} from './pcs3-security.mjs';
 
 export const now = () => new Date().toISOString();
 export const sha256 = x => createHash('sha256').update(typeof x === 'string' ? x : Buffer.from(x)).digest('hex');
@@ -184,19 +184,32 @@ export class DriveStore {
 const projectPath=slug=>`pcs3/projects/${slug}`;
 export class PCS3 {
   constructor({github,drive=null,allowPublic=false}){this.github=github;this.drive=drive;this.allowPublic=allowPublic;}
-  async ensurePrivacy(){if(typeof this.github.health==='function'){const h=await this.github.health();assert(h.private || this.allowPublic,'Refusing to write PCS data into PUBLIC GitHub repository without explicit PCS_ALLOW_PUBLIC opt-in');}}
+  async ensurePrivacy(state,classification=null){
+    // Fail closed if repository visibility cannot be verified.
+    assert(typeof this.github.health==='function','REPOSITORY_VISIBILITY_UNKNOWN');
+    const h=await this.github.health();
+    assert(typeof h.private==='boolean','REPOSITORY_VISIBILITY_UNKNOWN');
+    if(!h.private){
+      assert(this.allowPublic,'PUBLIC_REPOSITORY_NOT_AUTHORIZED');
+      assertPublicProjectSafe(state);
+      if(classification!==null)assert(classification==='PUBLIC','PUBLIC_DATA_BLOCKED: artifact must be PUBLIC');
+    }
+    return h;
+  }
   headPath(slug){assert(validSlug(slug),'invalid slug');return `${projectPath(slug)}/HEAD.json`;}
   eventPath(slug,id){return `${projectPath(slug)}/events/${id}.json`;}
   async load(slug){const h=await this.github.getFile(this.headPath(slug));if(!h)return null;const head=JSON.parse(h.buffer.toString());
     assert(head.schema==='pcs3.head.v1' && head.state?.slug===slug,'HEAD invalid');validateState(head.state);
     assert(head.state_hash===sha256(stable(head.state)),'HEAD state hash mismatch');return {...head,blob_sha:h.sha};}
-  async init(slug,name,actor='agent',{requestId=null,requestDigest=null}={}){
-    await this.ensurePrivacy();assert(!(await this.load(slug)), `project already exists ${slug}`);
-    const state=emptyState(slug,name,actor);return this.commit(slug,state,{expectedRevision:null,actor,reason:'bootstrap from supplied project brief',requestId,requestDigest});
+  async init(slug,name,actor='agent',{requestId=null,requestDigest=null,publicProjectReviewed=false}={}){
+    const state=emptyState(slug,name,actor);
+    if(publicProjectReviewed===true){state.policy.repository_visibility='PUBLIC';state.policy.public_content_reviewed=true;state.policy.content_classification='PUBLIC';}
+    await this.ensurePrivacy(state);assert(!(await this.load(slug)), `project already exists ${slug}`);
+    return this.commit(slug,state,{expectedRevision:null,actor,reason:'bootstrap from supplied project brief',requestId,requestDigest});
   }
   async commit(slug,state,{expectedRevision,actor='agent',reason='checkpoint',requestId=null,requestDigest=null}){
     validateState(state);assertSafeState(state);assert(state.slug===slug,'project slug mismatch');
-    await this.ensurePrivacy();
+    await this.ensurePrivacy(state);
     const prior=await this.load(slug);const actual=prior?.revision ?? null;
     assert(expectedRevision===actual,`CONFLICT expected revision ${expectedRevision}, current ${actual}; reload and reconcile`);
     const id=`MOM-${new Date().toISOString().replace(/[-:.]/g,'')}-${randomUUID()}`;
@@ -234,7 +247,7 @@ export class PCS3 {
   async putArtifactBuffer(slug,name,buf,{mime='application/octet-stream',actor='agent',drive=true,expectedRevision,classification='INTERNAL',requestId=null,requestDigest=null,origin=null}={}){
     assert(Buffer.isBuffer(buf),'artifact must be buffer');assert(buf.length>0,'empty artifact');
     const head=await this.load(slug);assert(head,'project missing');assert(expectedRevision===head.revision,`CONFLICT expected revision ${expectedRevision}, current ${head.revision}`);
-    await this.ensurePrivacy();
+    await this.ensurePrivacy(head.state,classification);
     const originalSha=sha256(buf), originalBytes=buf.length;
     const security=encodeArtifact({bytes:buf,filename:name,slug,classification});
     buf=security.bytes; name=security.storedName; mime=security.encrypted?'application/octet-stream':mime;

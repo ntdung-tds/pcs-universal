@@ -4,6 +4,7 @@
  */
 import {assert,stable,sha256,now,validateState} from './pcs3-core.mjs';
 import {validateProjectCollaboration} from './pcs3-collaboration.mjs';
+import {assertPublicProjectSafe} from './pcs3-security.mjs';
 
 const seals=new WeakMap();
 const safeRisk=new Set(['LOW','NORMAL']);
@@ -47,9 +48,14 @@ export function authorizeLeanClaim(state,{repoMetadata,caller,taskId,agentId}={}
   validateProjectCollaboration(state);
   const c=state.collaboration;
   assert(c&&c.policy?.self_claim_normal===true,'SELF_CLAIM_NOT_ENABLED');
-  assert(repoMetadata?.private===true&&repoMetadata.owner?.type==='User'
+  assert(repoMetadata?.owner?.type==='User'
     &&repoMetadata.owner.login?.toLowerCase()===c.policy.owner_login,
     'REPOSITORY_OWNER_NOT_VERIFIED');
+  if(repoMetadata.private!==true){
+    assert(repoMetadata.private===false && c.policy?.allow_public_repo===true,
+      'PUBLIC_REPOSITORY_NOT_AUTHORIZED');
+    assertPublicProjectSafe(state);
+  }
   const agent=c.agents.find(a=>a.id===agentId);
   assert(agent&&agent.status==='IDLE'&&c.proposals.some(p=>p.agent_id===agentId&&p.status==='APPROVED'),
     'AGENT_NOT_APPROVED_AND_IDLE');

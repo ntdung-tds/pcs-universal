@@ -80,7 +80,7 @@ test('legacy projects without opt-in remain locked',()=>{
 });
 test('metadata or GitHub caller identity unknown fails closed',()=>{
   const f=fixture();f.repoMetadata.private=false;
-  assert.throws(()=>authorize(f),/REPOSITORY_OWNER_NOT_VERIFIED/);
+  assert.throws(()=>authorize(f),/PUBLIC_REPOSITORY_NOT_AUTHORIZED/);
   f.repoMetadata.private=true;f.caller={};
   assert.throws(()=>authorize(f),/INDEPENDENT_GITHUB_AGENT_IDENTITY_REQUIRED/);
 });
@@ -109,4 +109,18 @@ test('second approved contributor chooses collaborative mode',()=>{
   const f=fixture();f.s.collaboration.agents.push({id:'Bot02',github_login:'bot-two',
     provider:'Claude',status:'IDLE',capabilities:[],joined_at:'2026-11-01T00:00:00Z'});
   assert.equal(leanControl(f.s,'T1').mode,'COLLABORATIVE');
+});
+
+test('public repository self-claim requires explicit classification and owner policy',()=>{
+ const f=fixture();
+ f.repoMetadata.private=false;
+ f.s.collaboration.policy.allow_public_repo=true;
+ f.s.policy.repository_visibility='PUBLIC';
+ f.s.policy.public_content_reviewed=true;
+ f.s.policy.content_classification='PUBLIC';
+ assert.throws(()=>authorize(f),/PUBLIC_DATA_BLOCKED/);
+ f.s.tasks[0].classification='PUBLIC';
+ assert.equal(authorize(f).task_id,'T1');
+ f.s.policy.content_classification='INTERNAL';
+ assert.throws(()=>authorize(f),/PUBLIC_POLICY_REQUIRED/);
 });

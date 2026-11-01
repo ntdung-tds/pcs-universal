@@ -4,13 +4,13 @@ import {AgentGovernanceOperator} from '../runtime/pcs3-agent-operator.mjs';
 import {makeSimpleState} from '../runtime/pcs3-simple.mjs';
 import {initCollaboration} from '../runtime/pcs3-collaboration.mjs';
 
-function fixture({race=false,deny=false}={}){
+function fixture({race=false,deny=false,publicRepo=false}={}){
   const doc=makeSimpleState('website-demo','Demo');
   doc.state.tasks=[{id:'T1',status:'PLANNED',title:'Homepage'}];initCollaboration(doc.state,{repoOwner:'alice'});
   doc.state.collaboration.agents.push({id:'AGENT01',provider:'ChatGPT',github_login:'worker',status:'REQUESTED',capabilities:['web'],joined_at:null});
   doc.state.collaboration.proposals.push({id:'JOIN01',agent_id:'AGENT01',mode:'SELF_PROPOSED',risk:'NORMAL',issue_number:10,summary:'Can build homepage',suggested_tasks:['T1'],status:'PENDING',created_at:'2026-01-01T00:00:00Z',decision:null});
   const calls=[], head='a'.repeat(40); let current=head, counter=0;
-  const meta={full_name:'alice/project',private:true,owner:{login:'alice',type:'User'}};
+  const meta={full_name:'alice/project',private:!publicRepo,owner:{login:'alice',type:'User'}};
   const responder=async(url,opts={})=>{
     const path=new URL(url).pathname.replace('/repos/alice/project',''); const method=opts.method??'GET';calls.push({method,path,body:opts.body?JSON.parse(opts.body):null});
     let data={};let status=200;
@@ -71,4 +71,18 @@ test('protected default branch offers PR for review, not false APPLIED status',a
 test('operator accepts scoped branch names without loosening path validation',()=>{
   assert.doesNotThrow(()=>new AgentGovernanceOperator({repo:'alice/project',token:'token',branch:'feature/home',fetcher:async()=>{}}));
   assert.throws(()=>new AgentGovernanceOperator({repo:'alice/project',token:'token',branch:'foo/../main',fetcher:async()=>{}}),/invalid branch/);
+});
+
+test('public repository governance requires explicit operator permission and reviewed PUBLIC data',async()=>{
+ const f=fixture({publicRepo:true});
+ const blocked=new AgentGovernanceOperator({repo:'alice/project',token:'token',fetcher:f.fetcher});
+ await assert.rejects(()=>blocked.loadSnapshot(),/PUBLIC_REPOSITORY_NOT_AUTHORIZED/);
+ const allowed=new AgentGovernanceOperator({repo:'alice/project',token:'token',allowPublic:true,fetcher:f.fetcher});
+ await assert.rejects(()=>allowed.loadSnapshot(),/PUBLIC_POLICY_REQUIRED/);
+ f.doc.state.policy.repository_visibility='PUBLIC';
+ f.doc.state.policy.public_content_reviewed=true;
+ f.doc.state.policy.content_classification='PUBLIC';
+ await assert.rejects(()=>allowed.loadSnapshot(),/PUBLIC_DATA_BLOCKED/);
+ f.doc.state.tasks[0].classification='PUBLIC';
+ assert.equal((await allowed.loadSnapshot()).doc.revision,1);
 });

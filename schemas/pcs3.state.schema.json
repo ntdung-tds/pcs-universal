@@ -122,6 +122,122 @@
         }
       },
       "additionalProperties": true
+    },
+    "delivery": {
+      "type": "object",
+      "required": [
+        "schema",
+        "technical_reviews",
+        "owner_feedback"
+      ],
+      "properties": {
+        "schema": {
+          "const": "pcs3.delivery.v1"
+        },
+        "technical_reviews": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "task_id",
+              "agent_id",
+              "lead_agent_id",
+              "status",
+              "pr_number",
+              "head_sha",
+              "review_id"
+            ],
+            "properties": {
+              "status": {
+                "const": "TECH_ACCEPTED"
+              },
+              "head_sha": {
+                "type": "string",
+                "pattern": "^[a-fA-F0-9]{40}$"
+              },
+              "pr_number": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "review_id": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          }
+        },
+        "owner_feedback": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "scope",
+              "target",
+              "decision",
+              "command",
+              "reviewed_sha",
+              "comment_id",
+              "issue_number",
+              "actor_login",
+              "owner_login"
+            ],
+            "properties": {
+              "scope": {
+                "enum": [
+                  "feature",
+                  "flow",
+                  "release"
+                ]
+              },
+              "decision": {
+                "enum": [
+                  "AGREED",
+                  "CHANGES_REQUESTED",
+                  "NOT_AGREED"
+                ]
+              },
+              "reviewed_sha": {
+                "type": "string",
+                "pattern": "^[a-fA-F0-9]{40}$"
+              },
+              "comment_id": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "issue_number": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          }
+        },
+        "owner_notes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "scope",
+              "target",
+              "preference",
+              "verification",
+              "summary"
+            ],
+            "properties": {
+              "verification": {
+                "const": "UNVERIFIED_CHAT"
+              },
+              "preference": {
+                "enum": [
+                  "AGREED",
+                  "CHANGES_REQUESTED",
+                  "NOT_AGREED"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "additionalProperties": true
     }
   },
   "additionalProperties": true

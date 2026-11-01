@@ -7,6 +7,16 @@ export const HEADER='# PCS SRS Changes\n<!-- pcs-srs-changes:v1 -->\n';
 const ID=/^[A-Za-z][A-Za-z0-9._-]{0,79}$/;
 const sha=x=>createHash('sha256').update(x).digest('hex');
 const good=(x,max=2000)=>typeof x==='string'&&x.trim().length>0&&x.length<=max;
+const validISO=s=>{
+ if(typeof s!=='string')return false;
+ const m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,6})?(Z|[+-]\d{2}:\d{2})$/.exec(s);
+ if(!m)return false;
+ const d=new Date(s);if(!Number.isFinite(d.valueOf()))return false;
+ const tz=m[7],offset=tz==='Z'?0:(tz[0]==='+'?1:-1)*(Number(tz.slice(1,3))*60+Number(tz.slice(4,6)));
+ if(Math.abs(offset)>14*60)return false;
+ const local=new Date(d.valueOf()+offset*60000).toISOString();
+ return local.slice(0,19)===s.slice(0,19);
+};
 const check=(ok,msg)=>{if(!ok)throw Error('PCS_SRS_CHANGE: '+msg)};
 export function parseLedger(markdown=HEADER){
  check(typeof markdown==='string'&&markdown.startsWith(HEADER),'INVALID_HEADER');
@@ -22,14 +32,14 @@ export function parseLedger(markdown=HEADER){
    check(e.feature_id===null||e.feature_id===undefined||ID.test(e.feature_id),'INVALID_FEATURE');
    check(e.srs_ref==='UNMAPPED'||good(e.srs_ref,512),'INVALID_SRS_REF');
    check(good(e.before)&&good(e.after)&&e.before!==e.after,'INVALID_DELTA');
-   check(good(e.reason,512)&&good(e.at,64)&&!isNaN(Date.parse(e.at)),'INVALID_PROVENANCE');
+   check(good(e.reason,512)&&good(e.at,64)&&validISO(e.at),'INVALID_PROVENANCE');
    check(e.based_on===(tips.get(e.item_key)??'BASELINE'),'STALE_PROPOSAL_BASE:'+e.id);
    proposals.set(e.id,e);
   }else if(e.kind==='DECIDE'){
    const p=proposals.get(e.id);
    check(p&&!decided.has(e.id),'MISSING_OR_DUPLICATE_PROPOSAL');
    check(e.decision==='APPROVED'||e.decision==='REJECTED','INVALID_DECISION');
-   check(good(e.actor,256)&&good(e.ref,1024)&&good(e.at,64)&&!isNaN(Date.parse(e.at)),'DECISION_PROVENANCE_REQUIRED');
+   check(good(e.actor,256)&&good(e.ref,1024)&&good(e.at,64)&&validISO(e.at),'DECISION_PROVENANCE_REQUIRED');
    if(e.decision==='APPROVED'){
     check(p.based_on===(tips.get(p.item_key)??'BASELINE'),'STALE_APPROVAL_BASE:'+e.id);
     tips.set(p.item_key,e.id);

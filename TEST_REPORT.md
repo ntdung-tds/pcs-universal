@@ -1,3 +1,12 @@
+# PCS 3.2 — Lean Contributor Management: validation plan (2026-11-01)
+
+- Thêm `runtime/pcs3-lean.mjs` + `tests/lean-management.test.mjs` cho quyền tự nhận việc có điều kiện (risk, classification, state CAS, independent GitHub caller identity).
+- Các test cover: Solo/Collaborative/Controlled, stale/forged evidence, approved agent only, unknown/HIGH risk, Owner-only flags, dependency, double-claim, legacy opt-out.
+- **Kết quả PASS/FAIL: chỉ căn cứ GitHub Actions của Pull Request PCS 3.2; trước khi chạy: PENDING.** Không suy diễn E2E private sandbox từ module tests.
+- **E2E còn mở:** private GitHub sandbox, 2 principals, branch protection, mock→live connector, cross-chat handoff; [tracking #9](https://github.com/ntdung-tds/pcs-universal/issues/9). Branch guard còn theo [#8](https://github.com/ntdung-tds/pcs-universal/issues/8).
+
+---
+
 # PCS 3.1.1 — Branch Guard validation
 
 - Added tests/branch-guard.test.mjs with authenticated Owner consent, plan SHA, independent caller identity, policy visibility and fail-closed checks.

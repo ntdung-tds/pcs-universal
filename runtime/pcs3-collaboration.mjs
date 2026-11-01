@@ -10,11 +10,29 @@ const LOGIN=/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$/;
 const statuses=new Set(['PENDING','APPROVED','REJECTED','REVOKED']);
 const agents=new Set(['REQUESTED','IDLE','ACTIVE','REVOKED']);
 const riskTypes=new Set(['NORMAL','SENSITIVE']);
-const verifiedDecisionObjects=new WeakSet();
+const verifiedDecisionObjects=new WeakMap(); // context-bound immutable evidence
 const safeStr=(v,n=300)=>typeof v==='string'&&v.trim().length>0&&v.length<=n;
 const cleanId=(v,name)=>{assert(IDENT.test(v??''),`invalid ${name}`);return v;};
 const login=(v,name)=>{assert(LOGIN.test(v??''),`invalid ${name}`);return v.toLowerCase();};
 const currentTime=()=>Date.now();
+/** Absent, invalid and non-normal task classifications require Owner approval.
+ * A proposal's self-reported risk never overrides the actual task.
+ */
+function taskRequiresOwner(state,id){
+  const task=state.tasks.find(t=>t.id===id);
+  if(!task)return true;
+  if(task.security_sensitive!==undefined&&task.security_sensitive!==false)return true;
+  if(typeof task.risk!=='string'||!['NORMAL','LOW'].includes(task.risk.trim().toUpperCase()))return true;
+  if(task.classification!==undefined&&!['PUBLIC','INTERNAL'].includes(String(task.classification).trim().toUpperCase()))return true;
+  return false;
+}
+function ownerOnlyScope(state,proposal,action,tasks){
+  if(proposal?.risk==='SENSITIVE')return true;
+  const scope=action==='revoke'
+    ? state.collaboration.assignments.filter(a=>a.agent_id===proposal?.agent_id).map(a=>a.task_id)
+    : tasks;
+  return scope.some(id=>taskRequiresOwner(state,id));
+}
 function uniqueIds(a,label){assert(Array.isArray(a),`${label} must be array`);for(const x of a)cleanId(x,label);assert(new Set(a).size===a.length,`${label} duplicate IDs`);}
 
 /** The `owner_login` is a repository metadata claim, independently checked
@@ -33,12 +51,12 @@ export function validateCollaboration(c){
   assert(c?.schema==='pcs3.collaboration.v1','collaboration schema invalid');
   login(c.policy?.owner_login,'owner');assert(Number.isInteger(c.policy?.max_active_agents)&&c.policy.max_active_agents>0&&c.policy.max_active_agents<=100,'invalid active agent cap');
   assert(Array.isArray(c.agents)&&Array.isArray(c.proposals)&&Array.isArray(c.assignments)&&Array.isArray(c.history),'collaboration arrays invalid');
-  assert(c.lead_epoch===undefined||(Number.isSafeInteger(c.lead_epoch)&&c.lead_epoch>=0),'lead epoch counter invalid');
+  assert(Number.isSafeInteger(c.lead_epoch)&&c.lead_epoch>=0,'lead epoch counter invalid');
   const ids=new Set(), proposals=new Set(), assigned=new Set(), approvalComments=new Set();
   for(const a of c.agents){cleanId(a.id,'agent ID');assert(!ids.has(a.id),'duplicate agent ID');ids.add(a.id);login(a.github_login,'agent login');assert(agents.has(a.status),'invalid agent status');assert(safeStr(a.provider,50),'agent provider required');}
   for(const p of c.proposals){cleanId(p.id,'proposal ID');assert(!proposals.has(p.id),'duplicate proposal ID');proposals.add(p.id);assert(ids.has(p.agent_id),'proposal agent missing');assert(statuses.has(p.status),'invalid proposal status');assert(['SELF_PROPOSED','LEAD_SUGGESTED','OWNER_SUGGESTED'].includes(p.mode),'proposal mode invalid');assert(riskTypes.has(p.risk),'proposal risk invalid');assert(Number.isSafeInteger(p.issue_number)&&p.issue_number>0,'proposal issue number invalid');uniqueIds(p.suggested_tasks,'suggested tasks');assert(typeof p.summary==='string'&&p.summary.length<=2000,'invalid proposal summary');if(p.decision){assert(safeStr(p.decision.actor_login,50)&&Number.isSafeInteger(p.decision.comment_id)&&p.decision.comment_id>0,'decision provenance invalid');const k=`${p.issue_number}:${p.decision.comment_id}`;assert(!approvalComments.has(k),'decision comment reused');approvalComments.add(k);}}
   for(const x of c.assignments){cleanId(x.task_id,'task ID');cleanId(x.agent_id,'assigned agent');assert(ids.has(x.agent_id),'assigned agent missing');assert(!assigned.has(x.task_id),'duplicate task assignment');assigned.add(x.task_id);}
-  if(c.lead!==null){assert(ids.has(c.lead.agent_id),'lead agent missing');assert(c.lead.delegation?.authority==='OWNER','lead must be owner-delegated');assert(Number.isInteger(c.lead.epoch)&&c.lead.epoch>0,'lead epoch invalid');assert(safeStr(c.lead.expires_at),'lead expiry required');assert(!Number.isNaN(Date.parse(c.lead.expires_at)),'invalid lead expiry');}
+  if(c.lead!==null){assert(ids.has(c.lead.agent_id),'lead agent missing');assert(c.lead.delegation?.authority==='OWNER','lead must be owner-delegated');assert(Number.isInteger(c.lead.epoch)&&c.lead.epoch>0,'lead epoch invalid');assert(safeStr(c.lead.expires_at),'lead expiry required');assert(!Number.isNaN(Date.parse(c.lead.expires_at)),'invalid lead expiry');assert(c.lead.epoch===c.lead_epoch,'lead epoch mismatch');const leadAgent=c.agents.find(a=>a.id===c.lead.agent_id);assert(leadAgent.github_login===c.lead.github_login,'lead identity mismatch');assert(c.lead.delegation.actor_login===c.policy.owner_login&&c.lead.delegation.action==='designate-lead'&&c.lead.delegation.proposalId===c.lead.agent_id,'lead owner delegation provenance invalid');}
   assert(c.agents.filter(a=>['ACTIVE','IDLE'].includes(a.status)).length<=c.policy.max_active_agents,'maximum active agents exceeded');
   return true;
 }
@@ -89,28 +107,42 @@ export function authorizeDecision(state,{
   const owner=approver===c.policy.owner_login;
   const lead=c.lead;
   const leadAgent=lead&&c.agents.find(a=>a.id===lead.agent_id);
-  const leadValid=!!lead&&!!leadAgent&&leadAgent.github_login===approver&&leadAgent.status!=='REVOKED'&&Date.parse(lead.expires_at)>new Date(at).getTime()&&lead.delegation?.authority==='OWNER';
+  const leadValid=!!lead&&!!leadAgent&&leadAgent.github_login===approver&&['IDLE','ACTIVE'].includes(leadAgent.status)&&lead.epoch===c.lead_epoch&&Date.parse(lead.expires_at)>currentTime()&&lead.delegation?.authority==='OWNER'&&lead.delegation.actor_login===c.policy.owner_login;
   const proposal=c.proposals.find(p=>p.id===proposalId);
   const taskIds=action==='assign'?parsed.tasks:(proposal?.suggested_tasks??[]);
-  const touchesSensitive=taskIds.some(id=>{const t=state.tasks.find(t=>t.id===id);return t?.security_sensitive===true||['HIGH','CRITICAL','SENSITIVE'].includes(t?.risk);});
+  const touchesSensitive=ownerOnlyScope(state,proposal,action,taskIds);
   if(['approve','reject','revoke','assign'].includes(action)){
     assert(proposal,'proposal not found');assert(issue.number===proposal.issue_number,'wrong proposal issue');
     assert(issue.body.includes(`<!-- pcs-agent-join:${proposalId} -->`),'issue does not identify proposal');
     assert(approver!==c.agents.find(a=>a.id===proposal.agent_id)?.github_login,'self-approval prohibited; same GitHub login cannot independently approve its own agent');
-    if(action==='revoke')assert(owner||leadValid,'only owner or delegated lead may revoke');
-    else if(proposal.risk==='SENSITIVE'||touchesSensitive)assert(owner,'sensitive work requires owner approval');
+    if(proposal.risk==='SENSITIVE'||touchesSensitive)assert(owner,'sensitive work requires owner approval');
+    else if(action==='revoke')assert(owner||leadValid,'only owner or delegated lead may revoke');
     else assert(owner||(leadValid&&c.policy.lead_can_approve_normal===true),'approval requires owner or delegated lead');
   }else {
     assert(owner,'lead designation/clearance requires owner');
     assert(issue.body.includes('<!-- pcs-lead-governance -->'),'lead command requires lead-governance Issue');
   }
-  const decision={action,proposalId,actor_login:approver,authority:owner?'OWNER':'DELEGATED_LEAD',issue_number:issue.number,comment_id:comment.id,comment_url:comment.html_url??null,observed_at:now(),command_digest:sha256(comment.body),tasks:parsed.tasks};
-  verifiedDecisionObjects.add(decision);return decision;
+  const decision=Object.freeze({action,proposalId,actor_login:approver,authority:owner?'OWNER':'DELEGATED_LEAD',issue_number:issue.number,comment_id:comment.id,comment_url:comment.html_url??null,observed_at:now(),command_digest:sha256(comment.body),tasks:Object.freeze([...parsed.tasks])});
+  verifiedDecisionObjects.set(decision,{digest:sha256(stable(decision)),stateIdentity:state,lead_epoch:c.lead_epoch,owner_login:c.policy.owner_login});
+  return decision;
 }
 
 export function applyDecision(state,evidence){
   const c=state.collaboration;assert(c,'collaboration not initialized');
-  assert(verifiedDecisionObjects.has(evidence),'UNVERIFIED_DECISION: obtain evidence through GitHub identity verification');
+  const seal=verifiedDecisionObjects.get(evidence);
+  assert(seal&&seal.stateIdentity===state,'UNVERIFIED_DECISION: obtain evidence through GitHub identity verification for this state');
+  assert(sha256(stable(evidence))===seal.digest,'TAMPERED_DECISION: evidence was modified after verification');
+  assert(c.lead_epoch===seal.lead_epoch,'STALE_LEAD_EPOCH: reauthorize on current project state');
+  assert(c.policy.owner_login===seal.owner_login,'STALE_OWNER_POLICY: reauthorize');
+  if(evidence.authority==='DELEGATED_LEAD'){
+    const l=c.lead,la=c.agents.find(a=>a.id===l?.agent_id);
+    assert(!!l&&l.epoch===c.lead_epoch&&la?.github_login===evidence.actor_login
+      &&['IDLE','ACTIVE'].includes(la.status)&&Date.parse(l.expires_at)>Date.now()
+      &&l.delegation?.authority==='OWNER'&&l.delegation.actor_login===c.policy.owner_login,
+      'STALE_LEAD_AUTHORITY: revoked, expired or changed lead; reauthorize');
+    assert(c.policy.lead_can_approve_normal===true,'lead approval policy revoked');
+  }
+  assert(evidence.authority==='OWNER'?evidence.actor_login===c.policy.owner_login:true,'OWNER_IDENTITY_MISMATCH');
   assert(['OWNER','DELEGATED_LEAD'].includes(evidence.authority),'untrusted decision provenance');
   assert(!c.history.some(h=>h.issue===evidence.issue_number&&h.comment===evidence.comment_id),'approval comment already applied');
   assert(Number.isSafeInteger(evidence.comment_id)&&evidence.comment_id>0,'decision comment ID required');
@@ -118,6 +150,10 @@ export function applyDecision(state,evidence){
   if(['approve','reject','revoke','assign'].includes(evidence.action)){
     assert(p,'proposal not found');
     const a=c.agents.find(x=>x.id===p.agent_id);assert(a,'agent missing');
+    const assignedScope=evidence.action==='assign'?evidence.tasks:p.suggested_tasks;
+    assert(evidence.actor_login!==a.github_login,'self-approval prohibited');
+    assert(!ownerOnlyScope(state,p,evidence.action,assignedScope)||evidence.authority==='OWNER',
+      'sensitive work requires owner approval at application');
     if(evidence.action==='approve'){
       assert(p.status==='PENDING','proposal already resolved');
       assert(c.agents.filter(x=>x.status==='ACTIVE'||x.status==='IDLE').length < c.policy.max_active_agents,'agent capacity reached');

@@ -6,7 +6,7 @@
     "schema": "pcs3.project-state.v1",
     "slug": "example-project",
     "name": "Example project",
-    "version": "3.0.2",
+    "version": "3.2.0",
     "created_at": "2026-10-31T18:23:56.852Z",
     "updated_at": "2026-10-31T18:23:56.852Z",
     "phase": "DISCOVERY",

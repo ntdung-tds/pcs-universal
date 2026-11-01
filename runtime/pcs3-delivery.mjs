@@ -6,6 +6,7 @@
  */
 import {assert, stable, sha256, now} from './pcs3-core.mjs';
 import {GitHubGovernanceSource} from './pcs3-collaboration.mjs';
+import {leanControl} from './pcs3-lean.mjs';
 
 const identity=/^[A-Za-z][A-Za-z0-9._-]{1,63}$/;
 const commitId=/^[a-f0-9]{40}$/i;
@@ -146,8 +147,16 @@ export function recommendNextTasks(state,{limit=5}={}){
   return state.tasks.filter(t=>t.status==='PLANNED'&&!assigned.has(t.id)
     &&!accepted.has(t.id)&&Array.isArray(t.dependencies||[])
     &&(t.dependencies||[]).every(x=>accepted.has(x)||state.tasks.some(v=>v.id===x&&v.status==='ACCEPTED')))
-    .slice(0,limit).map(t=>({task_id:t.id,title:t.title||t.name||t.id,
-      requires_assignment_approval:true}));
+    .slice(0,limit).map(t=>{
+      const c=state.collaboration;
+      const free=!!c?.agents.some(a=>a.status==='IDLE'
+        &&c.proposals.some(p=>p.agent_id===a.id&&p.status==='APPROVED'));
+      const canClaim=!!c?.policy?.self_claim_normal&&free
+        &&!leanControl(state,t.id).requires_owner;
+      return {task_id:t.id,title:t.title||t.name||t.id,
+        requires_assignment_approval:!canClaim,
+        self_claim_available_to_authorized_idle_agent:canClaim};
+    });
 }
 export function authorizeOwnerFeedback(state,{repoMetadata,issue,comment,scope,target,reviewedSha,branchSha}){
   assert(scopeTypes.has(scope),'invalid owner feedback scope');

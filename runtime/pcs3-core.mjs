@@ -2,6 +2,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { extname, basename } from 'node:path';
 import {assertSafeState, assertPublicProjectSafe, encodeArtifact} from './pcs3-security.mjs';
+import {effectiveRequirements} from '../tools/pcs-change-control.mjs';
 
 export const now = () => new Date().toISOString();
 export const sha256 = x => createHash('sha256').update(typeof x === 'string' ? x : Buffer.from(x)).digest('hex');
@@ -67,6 +68,14 @@ export function validateState(s){
     assert(new Set(rel.required_flows ?? []).size === (rel.required_flows ?? []).length, `${rel.id}: duplicate required flow`);
     for(const id of (rel.required_flows ?? [])) assert(ids.flows.has(id), `${rel.id}: missing flow ${id}`);
     if(rel.status==='ACCEPTED') for(const id of (rel.required_flows ?? [])) assert(ids.flows.get(id).status==='ACCEPTED', `${rel.id}: flow ${id} not accepted`);
+  }
+  // Optional SRS change index: fail closed on contradictory approved 'final' versions.
+  // Detailed CR documents remain in the project Git history, not in this state.
+  if(s.requirement_changes!==undefined){
+    effectiveRequirements(s.requirement_changes);
+    if(s.policy?.repository_visibility==='PUBLIC')
+      assert(s.requirement_changes.every(x=>x.classification==='PUBLIC'),
+        'PUBLIC_DATA_BLOCKED: requirement changes must be PUBLIC-classified');
   }
   assert(stable(s).length <= 750_000, 'state >750 KB: move bulky documents to artifacts, store refs in state');
   return true;

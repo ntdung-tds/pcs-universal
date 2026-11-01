@@ -12,7 +12,7 @@
 2. Lưu nội dung vào GitHub trước. Nếu Drive upload thành công và trả `file_id` + size (và MD5 khi hỗ trợ), ghi pointer Drive cùng trường `github_mirror` vào GH. Nếu GH HEAD commit thất bại, báo ORPHAN; có thể xóa Drive orphan khi được phép hoặc reconcile lại pointer.
 3. Fallback GH `artifacts/<sha>-<name>` cho file <=800 KB; file lớn dùng GitHub Releases draft assets. Giới hạn thực tế cần xem GitHub policy (thường mỗi release asset <=2 GiB); file quá giới hạn cần chia phần có kiểm chứng hoặc xin quyết định một phương pháp lưu GitHub khác. Không silently drop.
 4. Nếu Drive sau đó mất file, bản sao GitHub vẫn còn; `verify` hiện chỉ kiểm tra hash trạng thái, chưa tự tải lại từng binary để xác nhận mirror còn tồn tại. Cần audit artifacts định kỳ.
-5. Không được commit secrets, khóa riêng, PII không được phép hoặc ảnh riêng tư vào repo công khai. Repo private không tự động bảo đảm tuân thủ chính sách lưu trữ dữ liệu.
+5. Không được commit secrets, khóa riêng, PII không được phép hoặc ảnh riêng tư vào repo công khai. Repo Private không tự động bảo đảm tuân thủ chính sách lưu trữ dữ liệu; Public chỉ dùng cho nội dung thực sự PUBLIC theo [STATE_OPERATIONS](STATE_OPERATIONS.md), với xác minh quyền Owner và dữ liệu trước ghi.
 
 ## Conflict / retry
 

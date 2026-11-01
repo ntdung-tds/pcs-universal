@@ -74,7 +74,7 @@ test('SEC-01: risk escalation after authorization is re-evaluated at apply',()=>
   const s=withLead();register(s,'JOIN02','AGENT02','worker2',['T1'],'NORMAL',11);
   const pending=auth(s,'leaduser','/pcs approve JOIN02','approve','JOIN02',11);
   s.tasks[0].risk='CRITICAL';
-  assert.throws(()=>applyDecision(s,pending),/sensitive work requires owner/);
+  assert.throws(()=>applyDecision(s,pending),/STALE_GOVERNANCE_STATE|sensitive work requires owner/);
 });
 test('SEC-04: wrong lead epoch and forged delegation rejected by validator',()=>{
   const s=withLead();s.collaboration.lead.epoch+=10;
@@ -93,4 +93,11 @@ test('SEC-01: delegated lead cannot assign an owner-only task to idle agent',()=
   applyDecision(s,auth(s,'alice','/pcs approve JOIN02','approve','JOIN02',11));
   s.tasks[0].risk='High';
   assert.throws(()=>auth(s,'leaduser','/pcs assign JOIN02 T1','assign','JOIN02',11),/sensitive work requires owner/);
+});
+
+test('SEC-02: proposal task list cannot be altered after approval verification',()=>{
+  const s=setup();register(s,'JOIN01','AGENT01','worker',[]);
+  const decision=auth(s,'alice','/pcs approve JOIN01','approve','JOIN01');
+  s.collaboration.proposals[0].suggested_tasks=['T1'];
+  assert.throws(()=>applyDecision(s,decision),/STALE_GOVERNANCE_STATE/);
 });

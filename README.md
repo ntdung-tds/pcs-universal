@@ -65,6 +65,6 @@ Repo công khai này **không tự cấp quyền** cho AI chạy mã, clone, t�
 | Kiểm thử, giới hạn | [`TEST_REPORT.md`](TEST_REPORT.md) |
 | Hướng dẫn advanced | [`docs/`](docs/) |
 
-**Trạng thái:** PCS 3.1.0 đang được kiểm thử theo `TEST_REPORT.md`, nhưng **chưa chứng nhận quy trình end-to-end trên mọi nền tảng AI hoặc tài khoản GitHub cụ thể**.
+**Trạng thái:** PCS 3.1.0 có bộ kiểm thử hồi quy tự động và kiểm tra toàn vẹn gói; xem kết quả GitHub Actions và `TEST_REPORT.md`, nhưng **chưa chứng nhận quy trình end-to-end trên mọi nền tảng AI hoặc tài khoản GitHub cụ thể**.
 
 **Quyền sử dụng lại:** Repo đang công khai để đọc và tham khảo. Chưa gắn giấy phép mã nguồn mở; chủ sở hữu cần quyết định giấy phép nếu muốn cho phép bên khác tái sử dụng/phân phối rộng rãi.

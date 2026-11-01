@@ -2,6 +2,7 @@ import test from 'node:test';import assert from 'node:assert/strict';
 import {Buffer} from 'node:buffer';
 import {sha256,stable,emptyState,validateState,GitHubStore,DriveStore,PCS3} from '../runtime/pcs3-core.mjs';
 class FakeGitHub {
+ async health(){return {private:true};}
  constructor(){this.m=new Map();this.failHead=false;this.counter=0;this.releases=new Map();}
  async getFile(p){const b=this.m.get(p);return b?{buffer:Buffer.from(b),sha:sha256(b)}:null;}
  async putFile(p,b,expected){const old=this.m.get(p);if(this.failHead&&p.endsWith('HEAD.json'))throw Error('injected rejection');if(old){if(expected!==sha256(old))throw Error('409 Conflict');}else if(expected) throw Error('409 Conflict');this.m.set(p,Buffer.from(b));return {content:{sha:sha256(b)}};}

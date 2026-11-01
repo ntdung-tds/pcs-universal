@@ -1,3 +1,4 @@
+import {makeSimpleState,validateSimple} from '../runtime/pcs3-simple.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {effectiveRequirements} from '../tools/pcs-change-control.mjs';
@@ -41,4 +42,12 @@ test('read-only, bounded output and missing records',()=>{
  assert.equal(JSON.stringify(a),before);
  assert.equal(effectiveRequirements([],{itemId:'FEAT-001'}).items.length,0);
  assert.throws(()=>effectiveRequirements([],{limit:0}),/INVALID_LIMIT/);
+});
+
+test('canonical PCS3 validation rejects conflicted final decisions',()=>{
+ const doc=makeSimpleState('demo-project','Demo');
+ doc.state.requirement_changes=[record('CR-001','APPROVED'),record('CR-002','APPROVED','CR-001')];
+ assert.equal(validateSimple(doc),true);
+ doc.state.requirement_changes[1].based_on='BASELINE';
+ assert.throws(()=>validateSimple(doc),/AMBIGUOUS_APPROVED_BRANCH/);
 });

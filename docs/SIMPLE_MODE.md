@@ -1,8 +1,8 @@
-# PCS Simple Mode — giao SRS, AI tự vận hành trên GitHub
+# PCS 3.1 — Quy trình khởi tạo đơn giản trên GitHub (tương thích tài liệu Simple Mode)
 
-**Đây là chế độ mặc định dành cho ChatGPT, Claude, Gemini và các AI agent có quyền công cụ phù hợp.** Người dùng chỉ việc mở [`PROMPT.md`](../PROMPT.md), sao chép prompt, gửi SRS/SOW/đề cương hoặc mô tả yêu cầu. **Không cần thực hiện quy trình cài GitHub App, hai repository, Inbox, Gateway hay CLI trong Handbook.**
+**Đây là cách dùng mặc định của PCS Unified 3.1, không phải hệ thống riêng biệt chỉ dành cho một agent.** Người dùng chỉ việc mở [`PROMPT.md`](../PROMPT.md), sao chép prompt, gửi SRS/SOW/đề cương hoặc mô tả yêu cầu. **Không cần thực hiện quy trình cài GitHub App, hai repository, Inbox, Gateway hay CLI trong Handbook.**
 
-## Điều kiện thực tế
+> **Nghiệm thu 3.1:** Lead Agent đánh giá kỹ thuật và giao việc tiếp theo. Project Owner xem kết quả và nói đồng ý/cần sửa/không đồng ý; không phải kiểm tra code. Xem [quy trình PCS Unified 3.1](PCS_3_1_UNIFIED.md).\n\n## Điều kiện thực tế
 
 - Repo `pcs-universal` là **public và chỉ chứa công cụ PCS**, tuyệt đối không đưa SRS, dữ liệu dự án hoặc secrets vào đây.
 - Mỗi dự án có **repository GitHub riêng, mặc định private**. Nếu agent có quyền tạo repository thì tự tạo; nếu chưa có thì yêu cầu đúng thao tác cấp quyền/tạo repo, không giả vờ đã lưu.

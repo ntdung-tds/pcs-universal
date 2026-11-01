@@ -108,7 +108,8 @@ export function authorizeTechnicalAcceptance(state,{repoMetadata,pr,reviews,chec
   assert(last&&last.state==='APPROVED'&&last.commit_id===pr.head.sha
     &&Number.isSafeInteger(last.id),'LEAD_REVIEW_NOT_APPROVED_FOR_HEAD');
   assert(checks&&Array.isArray(checks.check_runs)&&checks.check_runs.length>0
-    &&checks.check_runs.length<100,'CHECK_RUNS_INCOMPLETE');
+    &&checks.check_runs.length<100&&Number.isInteger(checks.total_count)
+    &&checks.total_count===checks.check_runs.length,'CHECK_RUNS_INCOMPLETE');
   assert(checks.check_runs.every(x=>x.status==='completed'&&x.conclusion==='success'),
     'CI_NOT_FULLY_GREEN');
   return seal(Object.freeze({

@@ -111,3 +111,11 @@ node runtime/pcs3-agent-operator.mjs decide --expect=3 --issue=10 --comment=120 
 ## Tiêu chí nghiệm thu E2E còn phải thực hiện
 
 Trong repository dự án thử private: agent 1 khởi tạo, agent 2 đăng ký rảnh, agent 3 tự đề xuất task, owner duyệt, Lead được owner ủy quyền duyệt bình thường, từ chối task nhạy cảm, hai người ghi cạnh tranh, revoke/cấp lại, branch protection bật, và chuyển phiên ChatGPT↔Claude. Bộ test giả lập không thay thế các bài thử thật này.
+
+## Bản vá quyền phê duyệt — 01/11/2026
+
+- **Phân loại rủi ro:** Lead chỉ có thể duyệt các task có rủi ro xác định rõ `NORMAL` hoặc `LOW` và không có dấu hiệu nhạy cảm. Rủi ro thiếu/không nhận diện hoặc `HIGH` (bất kể chữ hoa/thường), dữ liệu `CONFIDENTIAL`/`RESTRICTED` đều yêu cầu Owner.
+- **Quyết định bất biến:** bằng chứng phê duyệt chỉ hợp lệ với đúng đề xuất, hành động, task, comment GitHub và snapshot dự án đã xác minh. Nếu đề xuất, task, phiên quyền Lead, chính sách hay trạng thái khác thay đổi, phải lấy bằng chứng mới.
+- **Lead có thời hạn:** cả lúc xác thực và lúc áp dụng quyết định đều kiểm tra epoch, tư cách và thời hạn Lead. Thu hồi hoặc thay Lead vô hiệu hóa quyết định cũ chưa thực thi.
+- **Nhánh được bảo vệ:** khi GitHub chặn ghi trực tiếp (403), operator thử tạo branch và PR. Kết quả `REVIEW_REQUIRED` chỉ có nghĩa là chờ review; **không** coi agent đã được cấp phép trước khi PR hợp nhất và trạng thái được xác minh.
+- **Giới hạn không thay đổi:** GitHub login không xác thực danh tính cửa sổ chat; token dùng chung không chứng minh Owner thực sự đồng ý; tệp state không thay thế rulesets/branch protection. Các AI ở cửa sổ riêng không tự thức dậy. Vẫn chưa có multi-provider E2E, watcher hay migration hợp nhất Simple/Advanced.

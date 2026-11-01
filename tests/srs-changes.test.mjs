@@ -6,7 +6,7 @@ const proposal=(id,before,after,base)=>({kind:'PROPOSE',id,task_id:'TASK-5',feat
 const decide=(id,decision='APPROVED')=>({kind:'DECIDE',id,decision,actor:'owner',ref:'https://github.com/example/repo/issues/10#issuecomment-3',at:'2026-11-01T10:01:00Z'});
 test('no Owner SRS section needed: derive active task/feature',()=>{
  assert.equal(activeContext(doc).item_key,'FEAT-2');
- const out=proposeFromActive(HEADER,doc,{id:'CR-1',before:'12 characters',after:'8 characters',reason:'Owner change'});
+ const out=proposeFromActive(HEADER,doc,{id:'CR-1',before:'12 characters',after:'8 characters',reason:'Owner change',requirement_key:'password-length'});
  assert.equal(out.event.item_key,'FEAT-2');assert.equal(parseLedger(out.markdown).events.length,1);
 });
 test('ambiguous mapping falls back to task, not invented section',()=>{
@@ -31,4 +31,27 @@ test('missing approval provenance or broken ledger fails closed',()=>{
  m=appendEvent(m,decide('CR-1','REJECTED'));
  assert.equal(summary(m,{item_key:'FEAT-2'}).items[0].effective_change_id,null);
  assert.throws(()=>parseLedger('arbitrary text'),/INVALID_HEADER/);
+});
+
+test('independent criteria in one Feature never overwrite each other',()=>{
+ let m=proposeFromActive(HEADER,doc,{id:'CR-P1',requirement_key:'password-length',before:'min 12',after:'min 8',reason:'Owner'}).markdown;
+ m=appendEvent(m,decide('CR-P1'));
+ const independent=proposeFromActive(m,doc,{id:'CR-U1',requirement_key:'username-length',before:'max 24',after:'max 40',reason:'Owner'});
+ assert.equal(independent.event.based_on,'BASELINE');
+ assert.notEqual(independent.event.item_key,'FEAT-2.password-length');
+ m=independent.markdown;
+ const next=proposeFromActive(m,doc,{id:'CR-P2',requirement_key:'password-length',before:'min 8',after:'min 10',reason:'Owner'});
+ assert.equal(next.event.based_on,'CR-P1');
+ assert.equal(summary(next.markdown,{task_id:'TASK-5'}).total_items,2);
+ assert.equal(summary(next.markdown,{feature_id:'FEAT-2'}).total_items,2);
+ assert.throws(()=>proposeFromActive(m,doc,{id:'CR-P3',requirement_key:'password-length',before:'unrelated',after:'other',reason:'Owner'}),/DELTA_BASELINE_MISMATCH/);
+ assert.throws(()=>proposeFromActive(m,doc,{id:'CR-BAD',before:'x',after:'y',reason:'Owner'}),/REQUIREMENT_KEY_REQUIRED/);
+});
+test('summary is bounded for many independent requirements',()=>{
+ let m=HEADER;
+ for(let i=0;i<14;i++)m=appendEvent(m,{...proposal('CR-Q'+i,'a','b','BASELINE'),item_key:'FEAT-2.aspect'+i,requirement_key:'aspect'+i});
+ const out=summary(m,{task_id:'TASK-5'});
+ assert.equal(out.total_items,14);assert.equal(out.items.length,8);assert.equal(out.remaining_items,6);
+ assert.equal(summary(m,{max_items:20}).items.length,14);
+ assert.throws(()=>summary(m,{max_items:100}),/INVALID_MAX_ITEMS/);
 });

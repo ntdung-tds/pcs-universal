@@ -48,9 +48,10 @@ test('optimistic checkpoint: stale writer cannot push over another writer',async
   await assert.rejects(()=>o.decide({expectedRevision:1,issueNumber:10,commentId:99,action:'approve',target:'JOIN01'}),/GITHUB_WRITE_BLOCKED_422/);
   assert.equal(f.getHead(),'e'.repeat(40));
 });
-test('branch rules 403 causes no claim of published governance',async()=>{
+test('branch rules 403 cannot publish directly and instead returns review-required PR',async()=>{
   const f=fixture({deny:true});const o=new AgentGovernanceOperator({repo:'alice/project',token:'token',fetcher:f.fetcher});
-  await assert.rejects(()=>o.decide({expectedRevision:1,issueNumber:10,commentId:99,action:'approve',target:'JOIN01'}),/GITHUB_WRITE_BLOCKED_403/);
+  const result=await o.decide({expectedRevision:1,issueNumber:10,commentId:99,action:'approve',target:'JOIN01'});
+  assert.equal(result.status,'REVIEW_REQUIRED');assert.equal(f.getHead(),'a'.repeat(40));
 });
 test('expected revision is mandatory to avoid silent overwrite',async()=>{
   const f=fixture();const o=new AgentGovernanceOperator({repo:'alice/project',token:'token',fetcher:f.fetcher});

@@ -11,7 +11,7 @@
 |---|---|---|
 | Lộ bí mật trong trạng thái/artifact | Scanner chặn một số credential trước khi ghi | Secret scanning + push protection của GitHub, review, xoay vòng |
 | Sao lưu tài liệu mật nguyên bản | Mã hóa authenticated AES-256-GCM cho `CONFIDENTIAL` | Giữ khóa bằng secret manager, chính sách pháp lý và phân quyền |
-| Nhầm repository công khai | Kiểm tra private khi init, artifact **và checkpoint** | Thiết lập private, cấm đổi visibility trái phép |
+| Nhầm repository công khai | Kiểm tra repository visibility và data classification khi init, artifact **và checkpoint**; Public là lựa chọn có điều kiện | Thiết lập private, cấm đổi visibility trái phép |
 | Agent giả mạo nghiệm thu | Inbox không được thêm/sửa approvals và không được chuyển trạng thái sang `ACCEPTED` | Approval xác thực qua PR/Code Owner/quy trình người có thẩm quyền |
 | Ghi đè giữa các agent | CAS theo revision/sha và snapshot | Branch protection, kiểm tra conflict, nhật ký audit |
 | Prompt injection trong SRS/Issue/Drive | Quy tắc nguồn không tin cậy, permissions logic, không thực thi input như lệnh | Giáo dục và review workflow hành động rủi ro cao |
@@ -22,7 +22,7 @@
 
 ## Ưu tiên GitHub bắt buộc (cấu hình qua GitHub, không thể bật chỉ bằng ZIP)
 
-- Repository **Private**, tổ chức bật 2FA/MFA, người dùng/agent quyền tối thiểu, token có hạn sử dụng và scope riêng từng repo. Không đưa PAT vào chat.
+- Repository **Private hoặc Public tùy dữ liệu/Owner** (Public phải qua kiểm soát trong `docs/STATE_OPERATIONS.md`), tổ chức bật 2FA/MFA, người dùng/agent quyền tối thiểu, token có hạn sử dụng và scope riêng từng repo. Không đưa PAT vào chat.
 - Bảo vệ nhánh chính: PR review, required checks, hạn chế force push, xóa branch, bypass, xem xét CODEOWNERS cho `runtime/`, `.github/`, `SECURITY.md`.
 - Bật Dependabot alerts & security updates, Secret scanning & push protection, Code scanning/CodeQL nếu gói GitHub hỗ trợ. Tính năng cho **private repo có thể phụ thuộc license**. Không được ghi là đã bật nếu chưa kiểm tra UI/REST thật.
 - Không chạy mã từ PR không tin cậy bằng token ghi; inbox hiện dùng push workflow với `contents: write` để ghi HEAD, **chỉ cho phép từ nhánh mặc định được bảo vệ**. Thành viên có quyền sửa workflow/core trên nhánh đó có thể thay đổi toàn bộ logic, nên cần GitHub Rulesets và review bằng người có thẩm quyền trước khi cho vận hành thật.

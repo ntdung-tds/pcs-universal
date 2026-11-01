@@ -1,3 +1,16 @@
+# Agent Governance Hardening — Báo cáo kiểm thử bổ sung 2026-11-01
+
+**Mục tiêu:** kiểm chứng bản vá P0 theo audit độc lập, không coi test mock là nghiệm thu đa ứng dụng.
+
+- Thêm test rủi ro `high`/`High`, thiếu/không nhận diện risk, nhạy cảm và owner-only.
+- Thêm test sửa/chuyển bằng chứng giữa hành động hoặc state, scope task đổi sau xác thực.
+- Thêm test Lead bị thu hồi, hết hạn và lệch epoch; kiểm tra provenance Owner trong metadata.
+- Thêm test GitHub protected branch: kết quả `REVIEW_REQUIRED` và PR, không đánh dấu `APPLIED` trước merge.
+- CI xem workflow `PCS3 Security and Regression` tại Pull Request bảo mật; test count và conclusion phải đối chiếu GitHub run thực tế.
+
+**Chưa chứng minh:** identity Owner/bot tách biệt trong môi trường thật; workflow tự thông báo giữa các phiên AI; protected branch PR review/merge thật; quyền truy cập/thu hồi token thật; xác minh QA `ACCEPTED` từ hệ thống bên ngoài; migration hai state schema.
+
+---
 # PCS 3.0.2 + Dynamic Agent Collaboration — Test report (2026-11-01)
 
 **Scope:** 132/132 local automated tests PASS; baseline security audit PASS. These are unit/mock/integration-simulation tests, not a live multi-chat E2E certification.

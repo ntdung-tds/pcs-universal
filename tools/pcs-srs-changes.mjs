@@ -66,7 +66,10 @@ export function proposeFromActive(markdown,doc,{tasks,features,id,before,after,r
  check(typeof requirement_key==='string'&&/^[a-z][a-z0-9-]{1,39}$/.test(requirement_key),'REQUIREMENT_KEY_REQUIRED');
  const item_key=c.item_key+'.'+requirement_key;
  check(ID.test(item_key),'REQUIREMENT_SCOPE_TOO_LONG');
- const ledger=parseLedger(markdown),prior=ledger.proposals.get(ledger.tips.get(item_key));
+ const ledger=parseLedger(markdown);
+ // Existing v1 records keyed only by Feature/Task are ambiguous; do not silently fork or relabel.
+ check(![...ledger.proposals.values()].some(p=>p.item_key===c.item_key&&p.requirement_key===undefined),'LEGACY_SCOPE_REVIEW_REQUIRED');
+ const prior=ledger.proposals.get(ledger.tips.get(item_key));
  if(prior)check(before===prior.after,'DELTA_BASELINE_MISMATCH');
  const e={kind:'PROPOSE',id,...c,item_key,requirement_key,based_on:ledger.tips.get(item_key)??'BASELINE',
   before,after,reason,at:at??new Date().toISOString()};

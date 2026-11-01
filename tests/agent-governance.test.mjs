@@ -5,7 +5,7 @@ import {makeSimpleState,validateSimple,renderMoment} from '../runtime/pcs3-simpl
 import {initCollaboration,registerProposal,authorizeDecision,applyDecision,validateProjectCollaboration,GitHubGovernanceSource} from '../runtime/pcs3-collaboration.mjs';
 const repo='alice/project';
 const meta={full_name:repo,private:true,owner:{login:'alice',type:'User'}};
-const state=()=>{const s=emptyState('site-project','Web Site');s.tasks=[{id:'T1',status:'PLANNED'},{id:'T2',status:'PLANNED'},{id:'T3',status:'PLANNED'}];initCollaboration(s,{repoOwner:'alice',maxAgents:3});return s;};
+const state=()=>{const s=emptyState('site-project','Web Site');s.tasks=[{id:'T1',status:'PLANNED',risk:'NORMAL'},{id:'T2',status:'PLANNED',risk:'NORMAL'},{id:'T3',status:'PLANNED',risk:'NORMAL'}];initCollaboration(s,{repoOwner:'alice',maxAgents:3});return s;};
 const issue=(id='JOIN01',number=10,author='worker')=>({number,body:`Joining PCS <!-- pcs-agent-join:${id} -->`,user:{login:author}});
 const prop=(id='JOIN01',agent='AGENT01',author='worker',risk='NORMAL',suggested_tasks=[])=>({id,agent_id:agent,provider:'Claude',github_login:author,issue_number:id==='JOIN01'?10:id==='JOIN02'?11:12,mode:'SELF_PROPOSED',risk,summary:'I can contribute on open tasks',suggested_tasks,capabilities:['frontend','review']});
 const comment=(num,actor,body,issueNum=10)=>({id:num,user:{login:actor},body,issue_url:`https://api.github.com/repos/${repo}/issues/${issueNum}`,html_url:`https://github.com/${repo}/issues/${issueNum}#issuecomment-${num}`});

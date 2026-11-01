@@ -8,7 +8,7 @@
 
 **Về sau:**
 
-> Tiếp tục dự án này theo PCS Moment mới nhất.
+> Tiếp tục dự án theo PCS, sử dụng trạng thái mới nhất trên GitHub.
 
 Một câu nhắn ngắn hơn như **“Hãy làm dự án này”** vẫn là tín hiệu hợp lệ để agent bắt đầu quy trình, khi nó đã có quyền và cấu hình.
 

@@ -1,3 +1,5 @@
+> **PCS 3.2 bổ sung:** Contributor được duyệt tư cách tham gia **một lần**, rồi có thể tự nhận task LOW/NORMAL đủ điều kiện, không cần GitHub approval cho từng task. Chỉ áp dụng khi `policy.self_claim_normal===true`, GitHub agent identity tách khỏi Owner và có checkpoint CAS; task nhạy cảm vẫn Owner-only. Các lệnh duyệt bên dưới còn dùng để join, giao việc ngoài self-claim và quản trị quyền. [Quy tắc PCS 3.2](PCS_3_2_LEAN.md).
+
 # PCS — Cộng tác AI linh hoạt (Dynamic Agent Collaboration)
 
 > **PCS 3.1.0:** Contributor được tự đề xuất, nhưng Lead được ủy quyền vẫn là đầu mối phân công. Lead nghiệm thu kỹ thuật task (PR, review, CI) và có thể tiếp tục giao việc; **Owner chỉ xem sản phẩm thực tế và quyết định đồng ý, yêu cầu sửa hoặc không đồng ý**. Đây là các quyền riêng biệt. [Xem quy trình thống nhất](PCS_3_1_UNIFIED.md).
@@ -13,7 +15,7 @@
 
 ## Ba cách phân công thống nhất
 
-1. **Agent tự đề xuất:** đọc backlog, năng lực công cụ, phụ thuộc, nhiệm vụ còn trống → mở Issue đề xuất. Chỉ bắt đầu sau khi được duyệt và ghi vào state.
+1. **Agent tự đề xuất:** đọc backlog, năng lực công cụ, phụ thuộc, nhiệm vụ còn trống → mở Issue đề xuất. Chỉ bắt đầu khi tư cách tham gia đã được duyệt và task được phân công hoặc self-claim hợp lệ theo PCS 3.2.
 2. **Lead Agent đề xuất hoặc phân công:** xem backlog và agent rảnh; Lead được chủ dự án ủy quyền có thể duyệt **công việc thông thường**.
 3. **Chủ dự án chỉ định:** bạn có thể tự duyệt, từ chối, giao việc, thu hồi hoặc đổi Lead. Quyết định của chủ dự án ưu tiên cao nhất.
 

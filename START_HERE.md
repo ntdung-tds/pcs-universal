@@ -10,6 +10,13 @@ User command: **"Tiếp tục dự án theo PCS, sử dụng trạng thái mới
 
 If the AI host supports Skills, the **single optional** `.agents/skills/pcs-universal/SKILL.md` provides a short PCS activation guide. It is discoverable only when the toolkit itself is an eligible workspace or the Skill is installed in a supported Skill location. It is not automatically installed into another project merely because this public repository exists; `START_HERE.md` works unchanged without a Skill. Do not create separate Skills for requirements, checklists or handoff.
 
+## Tự chủ triển khai, kiểm soát theo kết quả
+
+- SRS/SOW khóa mục tiêu, bất biến nghiệp vụ, an toàn, quyền dữ liệu, tương thích và điều kiện nghiệm thu; API/DDL/schema/test/task mẫu chỉ là **đề xuất kỹ thuật** trừ khi được phê duyệt rõ là ràng buộc.
+- Lead và contributor được chọn cách triển khai, chia/gộp task, cải tiến thiết kế nội bộ và kiểm thử tương xứng mức rủi ro **không cần Owner duyệt từng chi tiết thường lệ**; Lead giữ trách nhiệm review/CI và phân công trong quyền được cấp.
+- Quyết định OPEN **chỉ chặn công việc thực sự phụ thuộc**. Production, IAM/credentials, dữ liệu nhạy cảm, thao tác phá hủy, thanh toán/chi phí và thay đổi phá vỡ hợp đồng đã duyệt vẫn cần bằng chứng, quyền và phê duyệt xác thực theo chính sách.
+- Chỉ ghi sai lệch yêu cầu thật vào `pcs/SRS_CHANGES.md` của dự án; không tự sửa baseline, không tự khai PASS/APPROVED, không tạo thêm sổ/phê duyệt chỉ để hợp thức hóa quy trình.
+
 ## Start or resume
 1. Identify the **project repository** and current task. For an existing project, first read `pcs/MOMENT.md`, check its revision against the canonical `pcs/STATE.json` and HEAD, then inspect only the selected task, relevant PR/Issues, requirements and code. Do not paste the full state into the context by default. Do not reload unchanged PCS handbook/code in each chat. For a new project, read `docs/SIMPLE_MODE.md` and use `templates/simple/STATE.example.json` only to initialize a single `pcs3.simple.v1` state in a **private** project repo by default.
 2. Check real connector, GitHub, filesystem, test and deployment access. Do not invent access, CI, approvals or changes. If persistence is blocked, report it and do safe work only.

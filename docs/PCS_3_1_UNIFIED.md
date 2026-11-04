@@ -40,7 +40,7 @@ Không có biểu mẫu bắt buộc trong mỗi vòng phản hồi; chỉ sử 
 3. Contributor viết mã, tự kiểm thử và tạo Pull Request có marker `<!-- pcs-task:T1 -->` trong nội dung. Lead review PR, yêu cầu sửa nếu chưa đạt.
 4. **Nghiệm thu kỹ thuật:** Bản tham chiếu PCS 3.1 chỉ chấp nhận nếu PR đã merge, PR đúng repo/assignee, review Lead là APPROVED tại commit PR HEAD và tất cả check-runs trả về đã hoàn thành thành công. Nếu thiếu quyền đọc GitHub hoặc kiểm tra chưa đủ dữ liệu, không tự nhận TECH_ACCEPTED. Nghiệm thu kỹ thuật được ghi vào `state.delivery.technical_reviews[]`, giải phóng phân công và đề xuất các task tiếp theo khi phụ thuộc đã đạt.
 5. Lead tự giao task mới theo quyền ủy quyền, hoặc đợi agent nhận việc trong lần chạy tiếp theo nếu các cửa sổ AI độc lập không có coordinator.
-6. Khi đến mốc có sản phẩm xem được, Lead trình bày link demo/ảnh/tóm tắt, điều đã test và các hạn chế để **Owner xem và phản hồi**. Owner được quyền đồng ý, yêu cầu sửa hoặc bác bỏ. Lead chỉ tiếp tục triển khai phần Owner chấp thuận; không tự tuyên bố Owner đã đồng ý.
+6. Khi đến mốc có sản phẩm xem được, Lead trình bày link demo/ảnh/tóm tắt, điều đã test và các hạn chế để **Owner xem và phản hồi**. Owner được quyền đồng ý, yêu cầu sửa hoặc bác bỏ. Với phần Owner yêu cầu sửa hoặc không đồng ý, Lead không tự coi là đã nghiệm thu và chỉ tạm dừng công việc phụ thuộc trực tiếp; các task độc lập, an toàn trong phạm vi đã giao vẫn có thể tiếp tục. Không tự tuyên bố Owner đã đồng ý sản phẩm hoặc release.
 7. Chỉ đóng cổng release/production sau khi đủ bằng chứng kiểm thử, quy tắc bảo vệ nhánh, và phê duyệt có nguồn xác thực theo chính sách dự án.
 
 ## Lệnh/operator tùy chọn cho AI có terminal, không bắt Owner chạy

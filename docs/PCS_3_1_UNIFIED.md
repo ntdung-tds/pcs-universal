@@ -23,11 +23,11 @@ Không có biểu mẫu bắt buộc trong mỗi vòng phản hồi; chỉ sử 
 
 | Hành động | Owner | Lead | Contributor |
 | --- | --- | --- | --- |
-| Đề xuất task | Có | Có | Có, không tự kích hoạt |
-| Phân công/duyệt task thường | Có | Có trong thời hạn ủy quyền | Không |
+| Đề xuất task | Có | Có | Có; không tự duyệt đề xuất mới, nhưng được tự nhận task sẵn có theo PCS 3.2 nếu đủ điều kiện |
+| Phân công/duyệt task thường | Có | Có trong thời hạn ủy quyền | Không duyệt task người khác; có thể self-claim LOW/NORMAL theo PCS 3.2 |
 | Quyết định phạm vi hoặc quyền nhạy cảm | Có | Đề xuất | Đề xuất |
 | Review mã, kiểm thử, chấp nhận kỹ thuật | Có thể | Chịu trách nhiệm | Không tự nghiệm thu |
-| Chọn việc tiếp theo | Có thể | Có | Có thể đề xuất |
+| Chọn việc tiếp theo | Có thể | Có | Có thể đề xuất hoặc self-claim task đã đủ điều kiện theo PCS 3.2 |
 | Nghiệm thu kết quả theo cảm nhận sản phẩm | **Có** | Không được giả mạo | Không |
 | Production, xóa dữ liệu, thay đổi IAM quan trọng | Phê duyệt theo chính sách | Không tự vượt quyền | Không |
 
@@ -36,7 +36,7 @@ Không có biểu mẫu bắt buộc trong mỗi vòng phản hồi; chỉ sử 
 ## Luồng chuẩn
 
 1. Lead tiếp nhận yêu cầu, tạo backlog, phân công task theo GitHub Issues, phân tách môi trường/branch cho từng contributor.
-2. Contributor nhận task hoặc tự đề xuất. Lead/Owner có thể phê duyệt đề xuất thông thường; Owner duyệt thay đổi nhạy cảm. Không có agent nào có quyền tự duyệt đề xuất của mình.
+2. Contributor nhận task hoặc tự đề xuất. Ở PCS 3.2, contributor được duyệt tham gia và có quyền có thể tự nhận task LOW/NORMAL đã có trong backlog nếu đủ điều kiện; không tự phê duyệt đề xuất mới hoặc tự mở rộng phạm vi. Lead/Owner xử lý đề xuất và thay đổi nhạy cảm theo đúng thẩm quyền.
 3. Contributor viết mã, tự kiểm thử và tạo Pull Request có marker `<!-- pcs-task:T1 -->` trong nội dung. Lead review PR, yêu cầu sửa nếu chưa đạt.
 4. **Nghiệm thu kỹ thuật:** Bản tham chiếu PCS 3.1 chỉ chấp nhận nếu PR đã merge, PR đúng repo/assignee, review Lead là APPROVED tại commit PR HEAD và tất cả check-runs trả về đã hoàn thành thành công. Nếu thiếu quyền đọc GitHub hoặc kiểm tra chưa đủ dữ liệu, không tự nhận TECH_ACCEPTED. Nghiệm thu kỹ thuật được ghi vào `state.delivery.technical_reviews[]`, giải phóng phân công và đề xuất các task tiếp theo khi phụ thuộc đã đạt.
 5. Lead tự giao task mới theo quyền ủy quyền, hoặc đợi agent nhận việc trong lần chạy tiếp theo nếu các cửa sổ AI độc lập không có coordinator.

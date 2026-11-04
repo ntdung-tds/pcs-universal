@@ -1,6 +1,6 @@
 # PCS 3.2 — Lean Contributor Management
 
-**Ngày:** 01/11/2026 · **Trạng thái:** Candidate, chờ CI trên Pull Request và E2E private sandbox.
+**Ngày:** 01/11/2026 · **Trạng thái:** Candidate. CI bảo mật/hồi quy đã PASS tại [PR #24](https://github.com/ntdung-tds/pcs-universal/pull/24) và [PR #25](https://github.com/ntdung-tds/pcs-universal/pull/25); E2E private sandbox vẫn chưa được chứng nhận. Mỗi thay đổi mới phải kiểm tra CI riêng.
 
 ## Mục tiêu
 
